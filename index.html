@@ -159,6 +159,36 @@
     .region-card .region-desc { font-size: 0.875rem; color: #5B8FF9; transition: color 0.18s; }
     .region-card:hover .region-name { color: white; }
     .region-card:hover .region-desc { color: rgba(255,255,255,0.8); }
+
+    /* ── View toggle buttons ── */
+    .view-toggle-btn { padding: 4px 9px; border-radius: 6px; border: 1px solid #E2E8F0; background: white; cursor: pointer; color: #94a3b8; transition: all 0.15s; font-size: 0.8rem; line-height: 1; }
+    .view-toggle-btn.active { background: #5B8FF9; color: white; border-color: #5B8FF9; }
+    .view-toggle-btn:hover:not(.active) { background: #EEF3FE; color: #5B8FF9; border-color: #5B8FF9; }
+
+    /* ── Possible groups matrix ── */
+    .matrix-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+    .matrix-table th { background-color: #EEF3FE; padding: 4px 3px; text-align: center; font-weight: 600; color: #1A1A2E; border: 1px solid #E2E8F0; white-space: nowrap; }
+    .matrix-table thead th:first-child { position: sticky; left: 0; z-index: 2; background-color: #EEF3FE; }
+    .matrix-table td.matrix-hour { border: 1px solid #E2E8F0; padding: 2px 5px; text-align: right; font-size: 0.68rem; color: #64748b; font-weight: 600; background-color: #F8FAFC; white-space: nowrap; position: sticky; left: 0; z-index: 1; }
+    .matrix-cell { border: 1px solid #E2E8F0; padding: 2px 1px; text-align: center; min-width: 46px; height: 24px; vertical-align: middle; }
+    .matrix-cell.empty { background-color: #F8FAFC; }
+    .matrix-cell.occupied { cursor: pointer; font-weight: 700; color: white; font-size: 0.72rem; }
+    .matrix-cell.occupied:hover { filter: brightness(0.88); }
+    .heat-0  { background-color: #E2E8F0; color: #475569 !important; }
+    .heat-11 { background-color: #5B8FF9; }
+    .heat-26 { background-color: #16a34a; }
+    .heat-36 { background-color: #f59e0b; }
+    .heat-50 { background-color: #ea580c; }
+    .has-availability { background-image: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(91,143,249,0.25) 4px, rgba(91,143,249,0.25) 8px); }
+
+    /* ── Matrix modal (centrado, no fullscreen) ── */
+    .modal-container.fullscreen { max-width: 90vw; width: 90vw; max-height: 85vh; height: 85vh; border-radius: 16px; top: 50%; left: 50%; transform: translate(-50%, -50%); overflow: hidden; display: none; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .modal-container.fullscreen.active { display: flex; }
+    .matrix-detail-item { border-bottom: 1px solid #F1F5F9; padding-bottom: 12px; margin-bottom: 12px; }
+    .matrix-detail-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .matrix-legend { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; font-size: 0.65rem; }
+    .matrix-legend-item { display: flex; align-items: center; gap: 3px; }
+    .matrix-legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
   </style>
 </head>
 
@@ -180,12 +210,12 @@
         <div class="region-desc">América Latina</div>
       </div>
       <div class="region-card" onclick="selectRegion('brazil')">
-        <div class="region-flag">🇧🇷</div>
+        <div class="region-flag">🌎</div>
         <div class="region-name">Brazil</div>
         <div class="region-desc">Brasil</div>
       </div>
       <div class="region-card" onclick="selectRegion('turkey')">
-        <div class="region-flag">🇹🇷</div>
+        <div class="region-flag">🌍</div>
         <div class="region-name">MENA</div>
         <div class="region-desc">Middle East & North Africa</div>
       </div>
@@ -298,7 +328,19 @@
 
       <!-- COLUMNA 3: GRUPOS POSIBLES -->
       <div class="card">
-        <div id="col3-header" class="step-header">Grupos Posibles</div>
+        <div class="flex items-center justify-between mb-3">
+          <div id="col3-header" class="step-header mb-0 flex-1">Grupos Posibles</div>
+          <div class="flex gap-1 ml-2 shrink-0">
+            <button id="btn-view-cards" onclick="setPossibleView('cards')"
+                    class="view-toggle-btn active" title="Vista tarjetas">
+              <i class="fas fa-list"></i>
+            </button>
+            <button id="btn-view-matrix" onclick="setPossibleView('matrix')"
+                    class="view-toggle-btn" title="Vista matriz">
+              <i class="fas fa-th"></i>
+            </button>
+          </div>
+        </div>
 
         <label id="col3-label" class="block text-sm font-medium text-gray-700 mb-1">
           Grupos por demanda:
@@ -342,6 +384,33 @@
       </div>
 
     </div>
+  </div>
+
+  <!-- Matrix fullscreen modal -->
+  <div id="matrix-overlay" class="modal-overlay" onclick="closeMatrixView()"></div>
+  <div id="matrix-modal" class="modal-container fullscreen">
+    <div class="modal-header" style="flex-shrink:0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <h2 id="matrix-modal-title" class="text-xl font-bold text-gray-900">Vista Matriz — Grupos Posibles</h2>
+          <p id="matrix-modal-subtitle" class="text-sm text-gray-600 mt-1">Todos los grupos por día y hora (hora local del cliente)</p>
+        </div>
+        <button onclick="closeMatrixView()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">×</button>
+      </div>
+    </div>
+    <div id="matrix-body" class="modal-body" style="overflow-y:auto;flex:1;"></div>
+  </div>
+
+  <!-- Matrix cell detail modal -->
+  <div id="matrix-detail-overlay" class="modal-overlay" onclick="closeMatrixDetail()"></div>
+  <div id="matrix-detail-modal" class="modal-container" style="max-width:500px;">
+    <div class="modal-header">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h2 id="matrix-detail-title" class="text-xl font-bold text-gray-900">Detalle del horario</h2>
+        <button onclick="closeMatrixDetail()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">×</button>
+      </div>
+    </div>
+    <div id="matrix-detail-body" class="modal-body"></div>
   </div>
 
   <!-- Modal para ver todos los cursos activos -->
@@ -521,6 +590,12 @@ const TRANSLATIONS = {
     cardFull: '⚠️ GRUPO LLENO - REQUIERE AUTORIZACIÓN', cardLastSpot: '🚨 ¡ÚLTIMO CUPO DISPONIBLE! 🚨',
     cardUrgent2: '🚨 URGENTE - 2 cupos 🚨', cardAlmost3: '⚠️ Casi lleno - 3 cupos',
     cardAlmostN: n => `⚠️ Casi lleno - ${n} cupos`, cardRemainingUnit: 'restantes',
+    btnViewCards: 'Vista tarjetas', btnViewMatrix: 'Vista matriz',
+    matrixPopoverGroups: n => `${n} grupos en este horario`,
+    matrixTitle: 'Vista Matriz — Grupos Posibles',
+    matrixSubtitle: 'Todos los grupos por día y hora (hora local del cliente)',
+    matrixDetailTitle: 'Detalle del horario',
+    matrixLegendAvailability: 'disponibilidad del cliente',
     summaryAmoCrmLabel: 'AMO Link:', summaryAmoCrmLink: 'Ver lead',
     summaryAgeLabel: 'Edad:', summaryAgeUnit: 'años',
     summaryClusterId: '🆔 Cluster ID:', summaryClusterNote: '(Se copia al portapapeles al guardar)',
@@ -585,6 +660,12 @@ const TRANSLATIONS = {
     cardFull: '⚠️ GRUPO LOTADO - REQUER AUTORIZAÇÃO', cardLastSpot: '🚨 ÚLTIMA VAGA DISPONÍVEL! 🚨',
     cardUrgent2: '🚨 URGENTE - 2 vagas 🚨', cardAlmost3: '⚠️ Quase lotado - 3 vagas',
     cardAlmostN: n => `⚠️ Quase lotado - ${n} vagas`, cardRemainingUnit: 'disponíveis',
+    btnViewCards: 'Vista de cartões', btnViewMatrix: 'Vista de matriz',
+    matrixPopoverGroups: n => `${n} grupos neste horário`,
+    matrixTitle: 'Vista Matriz — Grupos Possíveis',
+    matrixSubtitle: 'Todos os grupos por dia e horário (hora local do cliente)',
+    matrixDetailTitle: 'Detalhe do horário',
+    matrixLegendAvailability: 'disponibilidade do cliente',
     summaryAmoCrmLabel: 'AMO Link:', summaryAmoCrmLink: 'Ver lead',
     summaryAgeLabel: 'Idade:', summaryAgeUnit: 'anos',
     summaryClusterId: '🆔 Cluster ID:', summaryClusterNote: '(Será copiado para a área de transferência ao salvar)',
@@ -649,6 +730,12 @@ const TRANSLATIONS = {
     cardFull: '⚠️ GRUP DOLU - YETKİLENDİRME GEREKLİ', cardLastSpot: '🚨 SON KALAN KONTENJAN! 🚨',
     cardUrgent2: '🚨 ACİL - 2 kontenjan 🚨', cardAlmost3: '⚠️ Neredeyse dolu - 3 kontenjan',
     cardAlmostN: n => `⚠️ Neredeyse dolu - ${n} kontenjan`, cardRemainingUnit: 'kalan',
+    btnViewCards: 'Kart görünümü', btnViewMatrix: 'Matris görünümü',
+    matrixPopoverGroups: n => `Bu saatte ${n} grup`,
+    matrixTitle: 'Matris Görünümü — Olası Gruplar',
+    matrixSubtitle: 'Tüm gruplar gün ve saate göre (müşteri yerel saati)',
+    matrixDetailTitle: 'Zaman dilimi detayı',
+    matrixLegendAvailability: 'müşteri müsaitliği',
     summaryAmoCrmLabel: 'AMO Link:', summaryAmoCrmLink: "Lead'e git",
     summaryAgeLabel: 'Yaş:', summaryAgeUnit: 'yaş',
     summaryClusterId: '🆔 Cluster ID:', summaryClusterNote: '(Kayıt sırasında panoya kopyalanacak)',
@@ -685,6 +772,8 @@ let lastFetchTime = null;
 let isFetching = false;
 let allFilteredCourses = [];
 let allFilteredPossibleGroups = [];
+let possibleGroupsView = 'cards';
+const matrixCellData = new Map();
 let selectedCourses = [];
 let preferredSchedule = [];
 let TCM_LIST = [];
@@ -758,6 +847,20 @@ function applyTranslations(regionKey) {
     ths[0].textContent = T.scheduleTableHour;
     T.scheduleTableDays.forEach((d, i) => { ths[i + 1].textContent = d; });
   }
+
+  // View toggle titles
+  const vcBtn = document.getElementById('btn-view-cards');
+  const vmBtn = document.getElementById('btn-view-matrix');
+  if (vcBtn) vcBtn.title = T.btnViewCards;
+  if (vmBtn) vmBtn.title = T.btnViewMatrix;
+
+  // Matrix modal titles
+  const mmTitle = document.getElementById('matrix-modal-title');
+  const mmSub   = document.getElementById('matrix-modal-subtitle');
+  const mdTitle = document.getElementById('matrix-detail-title');
+  if (mmTitle) mmTitle.textContent = T.matrixTitle;
+  if (mmSub)   mmSub.textContent   = T.matrixSubtitle;
+  if (mdTitle) mdTitle.textContent  = T.matrixDetailTitle;
 }
 
 // ============================================
@@ -1805,6 +1908,220 @@ if (course.isFull) {
 }
 
 
+// ============================================
+// VISTA MATRIZ — GRUPOS POSIBLES
+// ============================================
+
+// Spanish day name → Mon-indexed column (0=Mon … 6=Sun)
+const SPANISH_TO_COL_IDX = {
+  lunes: 0, martes: 1, 'miércoles': 2, jueves: 3, viernes: 4, 'sábado': 5, domingo: 6
+};
+// Schedule modal day key → Mon-indexed column
+const DAY_KEY_TO_IDX = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5, sun: 6 };
+
+function getMatrixGroups() {
+  const age       = parseInt(document.getElementById('student_age').value, 10);
+  const selectedId = parseInt(document.getElementById('course_type').value);
+  const groupType = document.getElementById('group_type').value;
+  const allowedIds = selectedId ? [selectedId] : [];
+  return LIVE_POSSIBLE_GROUPS.filter(c => {
+    if (allowedIds.length > 0 && !allowedIds.includes(c.courseId)) return false;
+    if (!isNaN(age) && (age < c.min_age || age > c.max_age)) return false;
+    if (groupType !== c.format) return false;
+    return true;
+  });
+}
+
+function setPossibleView(view) {
+  if (view === 'matrix') {
+    openMatrixView();
+  } else {
+    closeMatrixView();
+  }
+}
+
+function openMatrixView() {
+  document.getElementById('btn-view-cards').classList.remove('active');
+  document.getElementById('btn-view-matrix').classList.add('active');
+  document.getElementById('matrix-overlay').classList.add('active');
+  document.getElementById('matrix-modal').classList.add('active');
+  const groups = getMatrixGroups();
+  renderPossibleMatrix(groups);
+}
+
+function closeMatrixView() {
+  document.getElementById('btn-view-cards').classList.add('active');
+  document.getElementById('btn-view-matrix').classList.remove('active');
+  document.getElementById('matrix-overlay').classList.remove('active');
+  document.getElementById('matrix-modal').classList.remove('active');
+  closeMatrixDetail();
+}
+
+function renderPossibleMatrix(groups) {
+  const container = document.getElementById('matrix-body');
+  matrixCellData.clear();
+
+  const clientOffset = parseInt(document.getElementById('client_timezone').value);
+
+  // Build cellMap: `${dayIdx}-${hour}` → groups[]
+  groups.forEach(course => {
+    if (course.timeMinutes === null || course.timeMinutes === undefined) return;
+    const colDayIdx = SPANISH_TO_COL_IDX[course.day];
+    if (colDayIdx === undefined) return;
+
+    const colHour = Math.floor(course.timeMinutes / 60);
+    const diff = clientOffset - COLOMBIA_OFFSET;
+    let clientHour = colHour + diff;
+    let clientDayIdx = colDayIdx;
+    if (clientHour < 0)        { clientHour += 24; clientDayIdx = (clientDayIdx - 1 + 7) % 7; }
+    else if (clientHour >= 24) { clientHour -= 24; clientDayIdx = (clientDayIdx + 1) % 7; }
+
+    const key = `${clientDayIdx}-${clientHour}`;
+    if (!matrixCellData.has(key)) matrixCellData.set(key, []);
+    matrixCellData.get(key).push(Object.assign({}, course, {
+      _clientHour: clientHour, _clientDayIdx: clientDayIdx, _colHour: colHour
+    }));
+  });
+
+  if (groups.length === 0) {
+    container.innerHTML = `<div class="text-center py-12 text-gray-500">${T.noPossibleGroups}</div>`;
+    return;
+  }
+
+  // Legend
+  const legend = [
+    { cls: 'heat-0',  label: '0–10%' },
+    { cls: 'heat-11', label: '11–25%' },
+    { cls: 'heat-26', label: '26–35%' },
+    { cls: 'heat-36', label: '36–50%' },
+    { cls: 'heat-50', label: '>50%' },
+  ];
+  let legendHtml = `<div class="matrix-legend" style="margin-bottom:12px;">`;
+  legend.forEach(l => {
+    legendHtml += `<div class="matrix-legend-item"><div class="matrix-legend-dot ${l.cls}"></div><span>${l.label}</span></div>`;
+  });
+  if (preferredSchedule.length > 0) {
+    legendHtml += `<div class="matrix-legend-item"><span style="font-size:0.75rem;">🎯 = coincidencia exacta</span></div>`;
+    legendHtml += `<div class="matrix-legend-item"><div class="matrix-legend-dot has-availability" style="background-color:#F8FAFC;border:1px solid #E2E8F0;"></div><span>${T.matrixLegendAvailability}</span></div>`;
+  }
+  legendHtml += `</div>`;
+
+  // Table — fixed 09:00–22:00
+  let html = `${legendHtml}<div style="overflow-x:auto;"><table class="matrix-table"><thead><tr>
+    <th>${T.scheduleTableHour}</th>`;
+  T.scheduleTableDays.forEach(d => { html += `<th>${d}</th>`; });
+  html += `</tr></thead><tbody>`;
+
+  for (let h = 9; h <= 22; h++) {
+    const hStr = h.toString().padStart(2, '0') + ':00';
+    html += `<tr><td class="matrix-hour">${hStr}</td>`;
+    for (let d = 0; d < 7; d++) {
+      const key = `${d}-${h}`;
+      const cellGroups = matrixCellData.get(key);
+      const isAvailability = preferredSchedule.some(p => DAY_KEY_TO_IDX[p.day] === d && p.hour === h);
+      const availClass = isAvailability ? ' has-availability' : '';
+      if (!cellGroups) {
+        html += `<td class="matrix-cell empty${availClass}"></td>`;
+      } else {
+        const totalEnrolled = cellGroups.reduce((s, g) => s + g.enrolled, 0);
+        const totalCapacity = cellGroups.reduce((s, g) => s + g.capacity, 0);
+        const utilPct = totalCapacity > 0 ? (totalEnrolled / totalCapacity * 100) : 0;
+        let heatClass;
+        if (utilPct <= 10)      heatClass = 'heat-0';
+        else if (utilPct <= 25) heatClass = 'heat-11';
+        else if (utilPct <= 35) heatClass = 'heat-26';
+        else if (utilPct <= 50) heatClass = 'heat-36';
+        else                    heatClass = 'heat-50';
+
+        const prefix = isAvailability ? '🎯 ' : '';
+        const countText = `${prefix}${totalEnrolled}/${totalCapacity}`;
+
+        html += `<td class="matrix-cell occupied ${heatClass}${availClass}" onclick="openMatrixDetail('${key}')" title="${cellGroups.length > 1 ? T.matrixPopoverGroups(cellGroups.length) : cellGroups[0].name_es}">${countText}</td>`;
+      }
+    }
+    html += `</tr>`;
+  }
+  html += `</tbody></table></div>`;
+  container.innerHTML = html;
+}
+
+function openMatrixDetail(cellKey) {
+  const groups = matrixCellData.get(cellKey);
+  if (!groups || !groups.length) return;
+
+  const [dayIdxStr, hourStr] = cellKey.split('-');
+  const dayLabel = T.scheduleTableDays[parseInt(dayIdxStr)];
+  const hourLabel = hourStr.padStart(2, '0') + ':00';
+  document.getElementById('matrix-detail-title').textContent =
+    `${T.matrixDetailTitle} — ${dayLabel} ${hourLabel}`;
+
+  let html = '';
+  groups.forEach(course => {
+    const remaining = course.capacity - course.enrolled;
+    const clientHStr = course._clientHour.toString().padStart(2, '0') + ':00';
+    const colHStr    = course._colHour.toString().padStart(2, '0') + ':00';
+
+    // Match label
+    let matchLabel = '', matchClass = '';
+    if (preferredSchedule.length > 0) {
+      let isExact = false;
+      for (const pref of preferredSchedule) {
+        const colTime = convertClientToColombia(pref.day, pref.hour);
+        const timeDiff = Math.abs(course.timeMinutes - colTime.hour * 60);
+        if (course.day && course.day.toLowerCase() === colTime.day && timeDiff <= 30) {
+          isExact = true; break;
+        }
+      }
+      if (isExact) {
+        matchLabel = T.cardMatchExact; matchClass = 'match-exact';
+      } else {
+        for (const pref of preferredSchedule) {
+          const colTime = convertClientToColombia(pref.day, pref.hour);
+          const timeDiff = Math.abs(course.timeMinutes - colTime.hour * 60);
+          const courseDay = course.day ? course.day.toLowerCase() : '';
+          if (timeDiff <= 30) { matchLabel = T.cardMatchSameHour; matchClass = 'match-partial'; break; }
+          if (courseDay === colTime.day && timeDiff <= 120) { matchLabel = T.cardMatchSameDay; matchClass = 'match-partial'; break; }
+        }
+      }
+    }
+
+    const isSelected = selectedCourses.some(c => c.id === course.id);
+    html += `<div class="matrix-detail-item">
+      <div class="font-semibold text-gray-900 mb-1">${course.name_es}</div>
+      ${course.semanticId ? `<div class="text-xs text-gray-500 mb-1">${T.summaryClusterId} <span class="font-mono">${course.semanticId}</span></div>` : ''}
+      <div class="text-sm text-gray-700 mb-1">🕐 <b>${clientHStr}</b> ${T.cardTimezone} <span class="text-gray-400 text-xs">| ${colHStr} ${T.cardTimezoneRef}</span></div>
+      <div class="text-sm text-gray-700 mb-3">💻 ${course.enrolled}/${course.capacity} (${remaining} ${T.cardRemainingUnit})</div>
+      ${matchLabel ? `<div class="text-xs font-bold rounded px-2 py-1 text-center mb-3 ${matchClass}">${matchLabel}</div>` : ''}
+      <button onclick="toggleCourseSelectionFromDetail('${course.id}','detail-btn-${course.id}')"
+              class="btn-select w-full ${isSelected ? 'selected' : 'unselected'}"
+              id="detail-btn-${course.id}">
+        ${isSelected ? T.btnSelected : T.btnSelect}
+      </button>
+    </div>`;
+  });
+
+  document.getElementById('matrix-detail-body').innerHTML = html;
+  document.getElementById('matrix-detail-overlay').classList.add('active');
+  document.getElementById('matrix-detail-modal').classList.add('active');
+}
+
+function closeMatrixDetail() {
+  document.getElementById('matrix-detail-overlay').classList.remove('active');
+  document.getElementById('matrix-detail-modal').classList.remove('active');
+}
+
+function toggleCourseSelectionFromDetail(courseId, btnId) {
+  toggleCourseSelection(courseId);
+  const btn = document.getElementById(btnId);
+  if (btn) {
+    const isNowSelected = selectedCourses.some(c => c.id === courseId);
+    btn.textContent = isNowSelected ? T.btnSelected : T.btnSelect;
+    btn.className = `btn-select w-full ${isNowSelected ? 'selected' : 'unselected'}`;
+  }
+}
+
+// ============================================
+
 function toggleCourseSelection(courseId) {
   const course = [...allFilteredCourses, ...allFilteredPossibleGroups].find(c => c.id === courseId);
   if (!course) return;
@@ -2039,6 +2356,8 @@ function resetForNextStudent() {
   document.getElementById("course_recommendation").textContent = T.col2Placeholder;
   document.getElementById("possible_groups_list").innerHTML =
     `<div class="text-center py-4"><i class="fas fa-hourglass-half text-gray-400 text-2xl mb-2"></i><p>${T.col3Placeholder}</p></div>`;
+  matrixCellData.clear();
+  closeMatrixView();
 
   // Summary & save button
   document.getElementById("summary-content").textContent = T.summaryPlaceholder;
@@ -2162,9 +2481,10 @@ function populateTimezones(regionKey) {
   const refs = regionKey === 'brazil' ? refsBrazil : refsLatam;
 
   for (let i = -12; i <= 14; i++) {
-    const sign = i >= 0 ? "+" : "";
-    const label = `UTC${sign}${i}:00`;
-    const key = `${sign}${i}`;
+    const sign = i >= 0 ? "+" : "-";
+    const absStr = Math.abs(i).toString().padStart(2, '0');
+    const label = `UTC${sign}${absStr}:00`;
+    const key = i >= 0 ? `+${i}` : `${i}`;
     const ref = refs[key] || "";
     html += `<option value="${i}">${label}${ref}</option>`;
   }
