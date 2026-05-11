@@ -12,56 +12,153 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
   <style>
-    body { font-family: 'Inter', sans-serif; background-color:#f8fafc; }
-    #app-container { max-width:1400px; margin:40px auto; padding:20px; background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.05); }
-    .card { background:#fff; border-radius:12px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,.05); margin-bottom:20px; }
-    .step-header { background:#f1f5f9; padding:10px 15px; border-radius:8px; font-weight:600; color:#1e293b; margin-bottom:15px; }
-    .result-box { min-height:120px; background:#f9fafb; border-radius:8px; padding:12px 14px; margin-top:8px; border:1px solid #e5e7eb; white-space:normal; }
-    .ai-result-box { background:#ecfdf5; border-left:4px solid #10b981; padding:15px; border-radius:6px; }
-    .error-box { background:#fef2f2; border-left:4px solid #ef4444; padding:15px; border-radius:6px; margin:10px 0; }
-    .warning-box { background:#fffbeb; border-left:4px solid #f59e0b; padding:15px; border-radius:6px; margin:10px 0; }
-    .success-box { background:#f0fdf4; border-left:4px solid #22c55e; padding:15px; border-radius:6px; margin:10px 0; }
-    .course-option { border-radius:10px; border:1px solid #e5e7eb; background:#fff; padding:10px 12px; margin-bottom:10px; }
-    .course-option.critical { background:#fef2f2; border-color:#fecaca; }
-    .course-option.almost-full { background:#fffbeb; border-color:#fcd34d; }
-    .course-option.selected { background:#dbeafe; border:2px solid #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-    .course-option.possible-group { background:#f0fdf4; border-color:#86efac; }
-    .course-option-title { font-weight:600; margin-bottom:6px; color:#111827; }
-    .course-option-row { font-size:.875rem; color:#374151; margin-bottom:2px; }
-    .course-option-row strong { font-weight:600; }
-    .course-option-urgency { font-size:.85rem; margin-top:4px; }
-    .course-option-urgency.critical-text { color:#b91c1c; font-weight:700; }
-    .course-option-urgency.warning-text { color:#d97706; font-weight:600; }
+    /* ── Base ── */
+    body { font-family: 'Inter', sans-serif; background-color: #F5F7FA; }
+
+    /* ── App container ── */
+    #app-container { max-width: 1400px; margin: 40px auto; padding: 28px; background: #fff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 20px rgba(0,0,0,0.04); }
+    #app-container > h1 { color: #1A1A2E; }
+
+    /* ── Cards ── */
+    .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #E2E8F0; margin-bottom: 20px; }
+
+    /* ── Step headers ── */
+    .step-header { background: #EEF3FE; padding: 10px 15px; border-radius: 8px; font-weight: 600; color: #1A1A2E; margin-bottom: 15px; border-left: 3px solid #5B8FF9; }
+
+    /* ── Result boxes ── */
+    .result-box { min-height: 120px; background: #f9fafb; border-radius: 8px; padding: 12px 14px; margin-top: 8px; border: 1px solid #E2E8F0; white-space: normal; }
+
+    /* ── System message boxes ── */
+    .ai-result-box { background: #ecfdf5; border-left: 4px solid #10b981; padding: 15px; border-radius: 6px; }
+    .error-box { background: #fef2f2; border-left: 3px solid #ef4444; padding: 15px; border-radius: 6px; margin: 10px 0; color: #1A1A2E; }
+    .warning-box { background: #fffbeb; border-left: 3px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 10px 0; color: #1A1A2E; }
+    .success-box { background: #F0FDF4; border-left: 3px solid #16a34a; padding: 15px; border-radius: 6px; margin: 10px 0; color: #1A1A2E; }
+
+    /* ── Course cards ── */
+    .course-option { border-radius: 10px; border: 1px solid #E2E8F0; background: #fff; padding: 10px 12px; margin-bottom: 10px; transition: border-color 0.15s, box-shadow 0.15s; }
+    .course-option:hover { border-color: #5B8FF9; box-shadow: 0 4px 14px rgba(91,143,249,0.18); }
+    .course-option.critical { background: #fef2f2; border-color: #fecaca; }
+    .course-option.almost-full { background: #fffbeb; border-color: #fcd34d; }
+    .course-option.selected { background: #EEF3FE; border: 2px solid #5B8FF9; box-shadow: 0 0 0 3px rgba(91,143,249,0.12); }
+    .course-option.possible-group { background: #f0fdf4; border-color: #86efac; }
+    .course-option-title { font-weight: 600; margin-bottom: 6px; color: #1A1A2E; }
+    .course-option-row { font-size: .875rem; color: #374151; margin-bottom: 2px; }
+    .course-option-row strong { font-weight: 600; }
+    .course-option-urgency { font-size: .85rem; margin-top: 4px; }
+    .course-option-urgency.critical-text { color: #b91c1c; font-weight: 700; }
+    .course-option-urgency.warning-text { color: #d97706; font-weight: 600; }
     .course-option-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-top: 4px; }
-    .badge-possible { background: #d1fae5; color: #065f46; }
-    .badge-active { background: #dbeafe; color: #1e40af; }
+    .badge-possible { background: #F0FDF4; color: #16a34a; }
+    .badge-active { background: #EEF3FE; color: #5B8FF9; }
+
+    /* ── Connection status badge ── */
     .connection-status { position: fixed; top: 20px; right: 20px; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; z-index: 1000; }
-    .connection-status.connected { background: #22c55e; color: white; }
+    .connection-status.connected { background: #F0FDF4; color: #16a34a; border: 1.5px solid #16a34a; }
     .connection-status.disconnected { background: #ef4444; color: white; }
-    .connection-status.loading { background: #3b82f6; color: white; }
+    .connection-status.loading { background: #5B8FF9; color: white; }
+
+    /* ── Modals ── */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9998; display: none; }
     .modal-overlay.active { display: block; }
-    .modal-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 12px; max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto; z-index: 9999; box-shadow: 0 20px 60px rgba(0,0,0,0.3); display: none; }
+    .modal-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 16px; max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto; z-index: 9999; box-shadow: 0 20px 60px rgba(0,0,0,0.3); display: none; }
     .modal-container.active { display: block; }
-    .modal-header { position: sticky; top: 0; background: white; padding: 20px; border-bottom: 2px solid #e5e7eb; z-index: 10; }
+    .modal-header { position: sticky; top: 0; background: white; padding: 20px; border-bottom: 1px solid #E2E8F0; z-index: 10; }
     .modal-body { padding: 20px; }
-    .btn-select { padding: 8px 16px; border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-    .btn-select.selected { background: #3b82f6; color: white; }
-    .btn-select.unselected { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
-    .btn-select.unselected:hover { background: #e5e7eb; }
+
+    /* ── Course select buttons ── */
+    .btn-select { padding: 8px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn-select.selected { background: #5B8FF9; color: white; border: 1px solid #5B8FF9; }
+    .btn-select.unselected { background: white; color: #5B8FF9; border: 1px solid #5B8FF9; }
+    .btn-select.unselected:hover { background: #EEF3FE; }
     .btn-select.disabled { opacity: 0.5; cursor: not-allowed; }
-    .schedule-btn { background: #f97316; color: white; padding: 10px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; width: 100%; margin-top: 12px; border: none; }
-    .schedule-btn:hover { background: #ea580c; }
-    .schedule-btn.selected { background: #22c55e; }
+
+    /* ── Schedule / availability button ── */
+    .schedule-btn { background: #5B8FF9; color: white; padding: 10px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; width: 100%; margin-top: 12px; border: none; }
+    .schedule-btn:hover { background: #4a7ef0; }
+    .schedule-btn.selected { background: #16a34a; }
+
+    /* ── Schedule grid ── */
     .schedule-cell { user-select: none; cursor: pointer; transition: background-color 0.1s; }
-    .schedule-cell.checked { background-color: #dbeafe; }
+    .schedule-cell.checked { background-color: #EEF3FE; }
+    .schedule-cell.checked input[type="checkbox"] { accent-color: #5B8FF9; }
+
+    /* ── Schedule modal confirm button ── */
+    #schedule-modal .modal-body > button { background: #5B8FF9 !important; }
+    #schedule-modal .modal-body > button:hover { background: #4a7ef0 !important; }
+
+    /* ── "Ver todos" buttons ── */
+    #course_recommendation .mt-4 button,
+    #possible_groups_list .mt-4 button {
+      background: transparent !important;
+      color: #5B8FF9 !important;
+      border: 1.5px solid #5B8FF9 !important;
+      border-radius: 8px !important;
+      padding: 8px 20px !important;
+      font-size: 0.875rem !important;
+      font-weight: 600 !important;
+      transition: background 0.15s !important;
+    }
+    #course_recommendation .mt-4 button:hover,
+    #possible_groups_list .mt-4 button:hover { background: #EEF3FE !important; }
+
+    /* ── Schedule match badges ── */
+    .match-exact   { color: #16a34a; background: #F0FDF4; border: 1px solid #bbf7d0; }
+    .match-partial { color: #f59e0b; background: #FFFBEB; border: 1px solid #fde68a; }
+
+    /* ── Field validation ── */
     .field-error { border-color: #ef4444 !important; }
-    #region-selector { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; padding: 40px 20px; }
-    .region-card { background: white; border-radius: 16px; padding: 40px 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; border: 2px solid transparent; text-align: center; min-width: 220px; }
-    .region-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,0.14); border-color: #3b82f6; }
+
+    /* ── Inputs & selects — base border ── */
+    input[type="text"], input[type="url"], input[type="number"], select {
+      border-color: #E2E8F0 !important;
+    }
+    input[type="text"]:focus, input[type="url"]:focus,
+    input[type="number"]:focus, select:focus {
+      border-color: #5B8FF9 !important;
+      box-shadow: 0 0 0 3px rgba(91,143,249,0.15) !important;
+      outline: none !important;
+    }
+
+    /* ── Sugerir Grupos button ── */
+    #btn_suggest {
+      background: #5B8FF9 !important;
+      padding: 14px !important;
+      font-size: 1rem !important;
+      letter-spacing: 0.02em;
+      border-radius: 10px !important;
+    }
+    #btn_suggest:hover { background: #4a7ef0 !important; }
+
+    /* ── Sale summary box ── */
+    #sale-summary { border-color: #E2E8F0 !important; }
+
+    /* ── Save button ── */
+    #btn_submit_sale { background: #5B8FF9 !important; background-image: none !important; box-shadow: none !important; }
+    #btn_submit_sale:hover:not(:disabled) { background: #4a7ef0 !important; }
+
+    /* ── Region selector screen ── */
+    #region-selector { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F5F7FA; padding: 40px 20px; }
+    .region-card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px 32px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s, background 0.18s, color 0.18s;
+      border: 2px solid #5B8FF9;
+      text-align: center;
+      min-width: 220px;
+    }
+    .region-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 36px rgba(91,143,249,0.28);
+      background: #5B8FF9;
+    }
     .region-card .region-flag { font-size: 3rem; margin-bottom: 12px; }
-    .region-card .region-name { font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-bottom: 6px; }
-    .region-card .region-desc { font-size: 0.875rem; color: #64748b; }
+    .region-card .region-name { font-size: 1.5rem; font-weight: 800; color: #1A1A2E; margin-bottom: 6px; transition: color 0.18s; }
+    .region-card .region-desc { font-size: 0.875rem; color: #5B8FF9; transition: color 0.18s; }
+    .region-card:hover .region-name { color: white; }
+    .region-card:hover .region-desc { color: rgba(255,255,255,0.8); }
   </style>
 </head>
 
@@ -110,7 +207,7 @@
 
       <!-- COLUMNA 1: Diagnóstico -->
       <div class="card">
-        <div class="step-header">1. Diagnóstico del Estudiante</div>
+        <div id="col1-header" class="step-header">1. Diagnóstico del Estudiante</div>
 
         <label for="amo_crm_link" class="block text-sm font-medium text-gray-700 mb-1">
           🔗 AMO CRM Link:
@@ -118,7 +215,7 @@
         <input type="url" id="amo_crm_link" placeholder="https://kodland.amocrm.ru/leads/detail/..."
                class="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500" />
 
-        <label class="block text-sm font-medium text-gray-700 mb-1">
+        <label for="tcm_search" class="block text-sm font-medium text-gray-700 mb-1">
   👤 Nombre del TCM:
 </label>
 <input type="text" id="tcm_search"
@@ -188,9 +285,9 @@
 
       <!-- COLUMNA 2: TOP 3 GRUPOS ACTIVOS -->
       <div id="col-active-groups" class="card">
-        <div class="step-header">Grupos Activos</div>
+        <div id="col2-header" class="step-header">Grupos Activos</div>
 
-        <label class="block text-sm font-medium text-gray-700 mb-1">
+        <label id="col2-label" class="block text-sm font-medium text-gray-700 mb-1">
           Grupos activos sugeridos:
         </label>
         <div id="course_recommendation" class="result-box text-gray-800 text-sm">
@@ -200,9 +297,9 @@
 
       <!-- COLUMNA 3: GRUPOS POSIBLES -->
       <div class="card">
-        <div class="step-header">Grupos Posibles</div>
+        <div id="col3-header" class="step-header">Grupos Posibles</div>
 
-        <label class="block text-sm font-medium text-gray-700 mb-1">
+        <label id="col3-label" class="block text-sm font-medium text-gray-700 mb-1">
           Grupos por demanda:
         </label>
         <div id="possible_groups_list" class="result-box text-gray-600 text-sm">
@@ -222,7 +319,7 @@
 
       <!-- COLUMNA 2: ENVIAR VENTA -->
       <div class="card bg-gradient-to-br from-blue-50 to-purple-50">
-        <div class="step-header bg-blue-100">Confirmar y Guardar</div>
+        <div id="col4-header" class="step-header bg-blue-100">Confirmar y Guardar</div>
 
         <div id="sale-summary" class="mb-4 p-3 bg-white rounded-lg border border-blue-200">
           <h3 class="font-semibold text-gray-800 mb-2">📋 Resumen:</h3>
@@ -239,7 +336,7 @@
         </button>
 
         <p class="text-xs text-gray-500 mt-2 text-center">
-          Los datos se registrarán automáticamente.
+          <span id="save-note">Los datos se registrarán automáticamente.</span>
         </p>
       </div>
 
@@ -252,8 +349,8 @@
     <div class="modal-header">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h2 class="text-xl font-bold text-gray-900">Grupos Activos Disponibles</h2>
-          <p class="text-sm text-gray-600 mt-1">Selecciona un grupo para registrar la solicitud</p>
+          <h2 id="modal-active-title" class="text-xl font-bold text-gray-900">Grupos Activos Disponibles</h2>
+          <p id="modal-active-subtitle" class="text-sm text-gray-600 mt-1">Selecciona un grupo para registrar la solicitud</p>
         </div>
         <button onclick="closeCoursesModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">
           ×
@@ -270,8 +367,8 @@
     <div class="modal-header">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h2 class="text-xl font-bold text-gray-900">Grupos Posibles Disponibles</h2>
-          <p class="text-sm text-gray-600 mt-1">Grupos creados por demanda</p>
+          <h2 id="modal-possible-title" class="text-xl font-bold text-gray-900">Grupos Posibles Disponibles</h2>
+          <p id="modal-possible-subtitle" class="text-sm text-gray-600 mt-1">Grupos creados por demanda</p>
         </div>
         <button onclick="closePossibleGroupsModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">
           ×
@@ -287,8 +384,8 @@
     <div class="modal-header">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h2 class="text-xl font-bold text-gray-900">🕐 Disponibilidad Horaria</h2>
-          <p class="text-sm text-gray-600 mt-1">Marca todos los horarios en los que el estudiante puede tomar clases (Cuantos más, mejor)</p>
+          <h2 id="modal-schedule-title" class="text-xl font-bold text-gray-900">🕐 Disponibilidad Horaria</h2>
+          <p id="modal-schedule-subtitle" class="text-sm text-gray-600 mt-1">Marca todos los horarios en los que el estudiante puede tomar clases (Cuantos más, mejor)</p>
         </div>
         <button onclick="closeScheduleModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">
           ×
@@ -313,7 +410,7 @@
           <tbody id="schedule-table-body"></tbody>
         </table>
       </div>
-      <button onclick="submitPreferredSchedule()" 
+      <button id="btn-confirm-schedule" onclick="submitPreferredSchedule()"
               class="w-full bg-orange-600 text-white p-3 rounded-lg font-semibold hover:bg-orange-700 transition duration-150 mt-4">
         ✅ Confirmar
       </button>
@@ -376,6 +473,202 @@ let currentRegion = null;
 let TCM_LIST_CSV = "";
 let DATA_SOURCES = { active: null, possible: null };
 
+// ============================================
+// TRADUCCIONES
+// ============================================
+const TRANSLATIONS = {
+  latam: {
+    statusConnecting: 'Conectando...', statusConnected: 'Conectado', statusDisconnected: 'Sin conexión',
+    appSubtitle: 'Herramienta para agrupar solicitudes de apertura y reducir los tiempos de espera.',
+    col1Header: '1. Diagnóstico del Estudiante',
+    labelAmoCrm: '🔗 AMO CRM Link:', placeholderAmoCrm: 'https://kodland.amocrm.ru/leads/detail/...',
+    labelTcm: '👤 Nombre del TCM:', placeholderTcm: 'Busca por código o nombre (ej: L382)',
+    labelAge: 'Edad del estudiante:', labelTimezone: '🌍 Zona Horaria:', labelCourse: 'Curso:',
+    courseLoading: '-- Cargando cursos... --', courseSelectPlaceholder: '-- Selecciona el curso --',
+    courseEmpty: '-- Sin cursos disponibles --', courseError: '-- Error cargando cursos --',
+    labelFormat: 'Formato:', formatRegular: 'Regular', formatPremium: 'Premium (PRM)',
+    btnSchedule: '🕐 Disponibilidad horaria', labelSen: '⭐ Estudiante SEN', btnSuggest: '🔍 Sugerir Grupos',
+    col2Header: 'Grupos Activos', col2Label: 'Grupos activos sugeridos:',
+    col2Placeholder: "Completa los datos del estudiante y presiona 'Sugerir Grupos' para ver resultados.",
+    col3Header: 'Grupos Posibles', col3Label: 'Grupos por demanda:',
+    col3Placeholder: "Completa los datos del estudiante y presiona 'Sugerir Grupos' para ver resultados.",
+    col4Header: 'Confirmar y Guardar', summaryTitle: '📋 Resumen:',
+    summaryPlaceholder: 'Selecciona un grupo para ver el resumen.',
+    btnSave: '💾 Guardar', saveNote: 'Los datos se registrarán automáticamente.',
+    modalActiveTitle: 'Grupos Activos Disponibles', modalActiveSubtitle: 'Selecciona un grupo para registrar la solicitud',
+    modalPossibleTitle: 'Grupos Posibles Disponibles', modalPossibleSubtitle: 'Grupos creados por demanda',
+    modalScheduleTitle: '🕐 Disponibilidad Horaria',
+    modalScheduleSubtitle: 'Marca todos los horarios en los que el estudiante puede tomar clases (Cuantos más, mejor)',
+    scheduleTableHour: 'Hora',
+    scheduleTableDays: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+    displayDays: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+    btnConfirmSchedule: '✅ Confirmar',
+    scheduleSelectedTitle: 'Horarios seleccionados:', scheduleSelectedNote: 'El sistema buscará coincidencias basadas en estos horarios.',
+    alertNoSchedule: '⚠️ Selecciona al menos un horario preferido',
+    tcmNoResults: 'Sin resultados', loadingActive: 'Cargando grupos activos...', loadingPossible: 'Cargando grupos posibles...',
+    errorConnection: 'Error de conexión', noActiveGroups: 'No hay grupos activos para estos criterios',
+    noPossibleGroups: 'No hay grupos posibles para estos criterios',
+    btnSeeAllActive: n => `📋 Ver todos los ${n} grupos activos`,
+    btnSeeAllPossible: n => `📋 Ver todos los ${n} grupos posibles`,
+    btnSelect: 'Seleccionar', btnSelected: '✓ Seleccionado',
+    selectedCount1: '1 grupo seleccionado', selectedCount0: 'Ningún grupo seleccionado',
+    scheduleBtnMarked: n => `✅ ${n} horarios marcados`, btnSaving: '⏳ Guardando...',
+    cardBadgeActive: 'GRUPO ACTIVO', cardBadgePossible: 'GRUPO POSIBLE', cardOptionPrefix: 'OPCIÓN',
+    cardTimezone: '(Tu hora)', cardTimezoneRef: 'COL',
+    cardMatchExact: '🎯 Coincidencia EXACTA', cardMatchSameHour: '⏰ Misma hora, diferente día',
+    cardMatchSameDay: '🗓️ Mismo día, diferente hora', cardFullWarning: '(Pero grupo lleno ⚠️)',
+    cardFull: '⚠️ GRUPO LLENO - REQUIERE AUTORIZACIÓN', cardLastSpot: '🚨 ¡ÚLTIMO CUPO DISPONIBLE! 🚨',
+    cardUrgent2: '🚨 URGENTE - 2 cupos 🚨', cardAlmost3: '⚠️ Casi lleno - 3 cupos',
+    cardAlmostN: n => `⚠️ Casi lleno - ${n} cupos`, cardRemainingUnit: 'restantes',
+    summaryAmoCrmLabel: 'AMO Link:', summaryAmoCrmLink: 'Ver lead',
+    summaryAgeLabel: 'Edad:', summaryAgeUnit: 'años',
+    summaryClusterId: '🆔 Cluster ID:', summaryClusterNote: '(Se copia al portapapeles al guardar)',
+    summaryAvailability: 'Disponibilidad:', summaryScheduleCount: n => `${n} horarios`,
+    summaryPossibleGroup: 'Grupo posible:', summarySelection: 'Selección:',
+    summaryTagPossible: '[Posible]', summaryTagActive: '[Activo]',
+    msgConnectionLimitedTitle: '⚠️ Conexión limitada', msgConnectionLimitedBody: 'No se pudieron cargar los datos. Intenta refrescar la página.',
+    msgIncompleteTitle: '⚠️ Campos incompletos',
+    msgSelectCourse: 'Selecciona un curso.', msgAgeRange: 'La edad debe estar entre 7 y 17 años.',
+    msgAmoRequired: 'El AMO Link es obligatorio.',
+    msgAmoInvalid: 'AMO Link inválido. Formato esperado: https://kodland.amocrm.ru/leads/detail/12345',
+    msgMatchFoundTitle: '✅ Coincidencias encontradas', msgMatchFoundBody: 'Resultados filtrados por disponibilidad horaria.',
+    msgNoMatchTitle: '⚠️ Sin coincidencias exactas', msgNoMatchBody: 'Mostrando los grupos más cercanos.',
+    msgScheduleSavedTitle: '✅ Horarios guardados', msgScheduleSavedBody: 'Presiona "Sugerir Grupos" para ver los resultados.',
+    msgSelectGroupSave: 'Selecciona un grupo antes de guardar.', msgSelectTcm: 'Selecciona tu nombre de la lista.',
+    msgSavedTitle: '✅ Registro guardado', msgSavedCluster: 'Solicitud registrada. Cluster ID copiado al portapapeles.',
+    msgSavedOk: 'La solicitud se registró correctamente.',
+    msgErrorTitle: '❌ Error', msgErrorSave: 'No se pudo guardar. Intenta de nuevo.',
+    alertSaved: clip => `✅ ¡Registro Guardado!\n\n📋 COPIADO AL PORTAPAPELES:\n"${clip}"\n\nYa puedes pegarlo en el Formulario de Pago.`,
+  },
+  brazil: {
+    statusConnecting: 'Conectando...', statusConnected: 'Conectado', statusDisconnected: 'Sem conexão',
+    appSubtitle: 'Ferramenta para agrupar solicitações de abertura e reduzir o tempo de espera.',
+    col1Header: '1. Diagnóstico do Aluno',
+    labelAmoCrm: '🔗 AMO CRM Link:', placeholderAmoCrm: 'https://kodland.amocrm.ru/leads/detail/...',
+    labelTcm: '👤 Nome do TCM:', placeholderTcm: 'Busque por código ou nome (ex: L382)',
+    labelAge: 'Idade do aluno:', labelTimezone: '🌍 Fuso Horário:', labelCourse: 'Curso:',
+    courseLoading: '-- Carregando cursos... --', courseSelectPlaceholder: '-- Selecione o curso --',
+    courseEmpty: '-- Sem cursos disponíveis --', courseError: '-- Erro ao carregar cursos --',
+    labelFormat: 'Formato:', formatRegular: 'Regular', formatPremium: 'Premium (PRM)',
+    btnSchedule: '🕐 Disponibilidade de horário', labelSen: '⭐ Aluno SEN', btnSuggest: '🔍 Sugerir Grupos',
+    col2Header: 'Grupos Ativos', col2Label: 'Grupos ativos sugeridos:',
+    col2Placeholder: "Preencha os dados do aluno e clique em 'Sugerir Grupos' para ver os resultados.",
+    col3Header: 'Grupos Possíveis', col3Label: 'Grupos por demanda:',
+    col3Placeholder: "Preencha os dados do aluno e clique em 'Sugerir Grupos' para ver os resultados.",
+    col4Header: 'Confirmar e Salvar', summaryTitle: '📋 Resumo:',
+    summaryPlaceholder: 'Selecione um grupo para ver o resumo.',
+    btnSave: '💾 Salvar', saveNote: 'Os dados serão registrados automaticamente.',
+    modalActiveTitle: 'Grupos Ativos Disponíveis', modalActiveSubtitle: 'Selecione um grupo para registrar a solicitação',
+    modalPossibleTitle: 'Grupos Possíveis Disponíveis', modalPossibleSubtitle: 'Grupos criados por demanda',
+    modalScheduleTitle: '🕐 Disponibilidade de Horário',
+    modalScheduleSubtitle: 'Marque todos os horários em que o aluno pode ter aulas (Quanto mais, melhor)',
+    scheduleTableHour: 'Hora',
+    scheduleTableDays: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+    displayDays: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+    btnConfirmSchedule: '✅ Confirmar',
+    scheduleSelectedTitle: 'Horários selecionados:', scheduleSelectedNote: 'O sistema buscará correspondências com base nesses horários.',
+    alertNoSchedule: '⚠️ Selecione pelo menos um horário preferido',
+    tcmNoResults: 'Sem resultados', loadingActive: 'Carregando grupos ativos...', loadingPossible: 'Carregando grupos possíveis...',
+    errorConnection: 'Erro de conexão', noActiveGroups: 'Não há grupos ativos para estes critérios',
+    noPossibleGroups: 'Não há grupos possíveis para estes critérios',
+    btnSeeAllActive: n => `📋 Ver todos os ${n} grupos ativos`,
+    btnSeeAllPossible: n => `📋 Ver todos os ${n} grupos possíveis`,
+    btnSelect: 'Selecionar', btnSelected: '✓ Selecionado',
+    selectedCount1: '1 grupo selecionado', selectedCount0: 'Nenhum grupo selecionado',
+    scheduleBtnMarked: n => `✅ ${n} horários marcados`, btnSaving: '⏳ Salvando...',
+    cardBadgeActive: 'GRUPO ATIVO', cardBadgePossible: 'GRUPO POSSÍVEL', cardOptionPrefix: 'OPÇÃO',
+    cardTimezone: '(Seu horário)', cardTimezoneRef: 'BRA',
+    cardMatchExact: '🎯 Correspondência EXATA', cardMatchSameHour: '⏰ Mesmo horário, dia diferente',
+    cardMatchSameDay: '🗓️ Mesmo dia, horário diferente', cardFullWarning: '(Mas grupo lotado ⚠️)',
+    cardFull: '⚠️ GRUPO LOTADO - REQUER AUTORIZAÇÃO', cardLastSpot: '🚨 ÚLTIMA VAGA DISPONÍVEL! 🚨',
+    cardUrgent2: '🚨 URGENTE - 2 vagas 🚨', cardAlmost3: '⚠️ Quase lotado - 3 vagas',
+    cardAlmostN: n => `⚠️ Quase lotado - ${n} vagas`, cardRemainingUnit: 'restantes',
+    summaryAmoCrmLabel: 'AMO Link:', summaryAmoCrmLink: 'Ver lead',
+    summaryAgeLabel: 'Idade:', summaryAgeUnit: 'anos',
+    summaryClusterId: '🆔 Cluster ID:', summaryClusterNote: '(Será copiado para a área de transferência ao salvar)',
+    summaryAvailability: 'Disponibilidade:', summaryScheduleCount: n => `${n} horários`,
+    summaryPossibleGroup: 'Grupo possível:', summarySelection: 'Seleção:',
+    summaryTagPossible: '[Possível]', summaryTagActive: '[Ativo]',
+    msgConnectionLimitedTitle: '⚠️ Conexão limitada', msgConnectionLimitedBody: 'Não foi possível carregar os dados. Tente atualizar a página.',
+    msgIncompleteTitle: '⚠️ Campos incompletos',
+    msgSelectCourse: 'Selecione um curso.', msgAgeRange: 'A idade deve estar entre 7 e 17 anos.',
+    msgAmoRequired: 'O AMO Link é obrigatório.',
+    msgAmoInvalid: 'AMO Link inválido. Formato esperado: https://kodland.amocrm.ru/leads/detail/12345',
+    msgMatchFoundTitle: '✅ Correspondências encontradas', msgMatchFoundBody: 'Resultados filtrados por disponibilidade de horário.',
+    msgNoMatchTitle: '⚠️ Sem correspondências exatas', msgNoMatchBody: 'Mostrando os grupos mais próximos.',
+    msgScheduleSavedTitle: '✅ Horários salvos', msgScheduleSavedBody: 'Clique em "Sugerir Grupos" para ver os resultados.',
+    msgSelectGroupSave: 'Selecione um grupo antes de salvar.', msgSelectTcm: 'Selecione seu nome na lista.',
+    msgSavedTitle: '✅ Registro salvo', msgSavedCluster: 'Solicitação registrada. Cluster ID copiado para a área de transferência.',
+    msgSavedOk: 'A solicitação foi registrada com sucesso.',
+    msgErrorTitle: '❌ Erro', msgErrorSave: 'Não foi possível salvar. Tente novamente.',
+    alertSaved: clip => `✅ Registro Salvo!\n\n📋 COPIADO PARA A ÁREA DE TRANSFERÊNCIA:\n"${clip}"\n\nJá pode colar no Formulário de Pagamento.`,
+  },
+  turkey: {
+    statusConnecting: 'Bağlanıyor...', statusConnected: 'Bağlandı', statusDisconnected: 'Bağlantı yok',
+    appSubtitle: 'Açılış taleplerini gruplamak ve bekleme sürelerini azaltmak için araç.',
+    col1Header: '1. Öğrenci Tanılaması',
+    labelAmoCrm: '🔗 AMO CRM Linki:', placeholderAmoCrm: 'https://kodland.amocrm.ru/leads/detail/...',
+    labelTcm: '👤 TCM Adı:', placeholderTcm: 'Kod veya isimle ara (örn: L382)',
+    labelAge: 'Öğrenci yaşı:', labelTimezone: '🌍 Saat Dilimi:', labelCourse: 'Kurs:',
+    courseLoading: '-- Kurslar yükleniyor... --', courseSelectPlaceholder: '-- Kurs seçin --',
+    courseEmpty: '-- Mevcut kurs yok --', courseError: '-- Kurs yüklenirken hata --',
+    labelFormat: 'Format:', formatRegular: 'Regular', formatPremium: 'Premium (PRM)',
+    btnSchedule: '🕐 Müsait saatler', labelSen: '⭐ SEN Öğrencisi', btnSuggest: '🔍 Grup Öner',
+    col2Header: 'Aktif Gruplar', col2Label: 'Önerilen aktif gruplar:',
+    col2Placeholder: "Öğrenci bilgilerini doldurun ve 'Grup Öner'e basın.",
+    col3Header: 'Olası Gruplar', col3Label: 'Talebe göre gruplar:',
+    col3Placeholder: "Öğrenci bilgilerini doldurun ve 'Grup Öner'e basın.",
+    col4Header: 'Onayla ve Kaydet', summaryTitle: '📋 Özet:',
+    summaryPlaceholder: 'Özeti görmek için bir grup seçin.',
+    btnSave: '💾 Kaydet', saveNote: 'Veriler otomatik olarak kaydedilecek.',
+    modalActiveTitle: 'Mevcut Aktif Gruplar', modalActiveSubtitle: 'Talebi kaydetmek için bir grup seçin',
+    modalPossibleTitle: 'Mevcut Olası Gruplar', modalPossibleSubtitle: 'Talebe göre oluşturulan gruplar',
+    modalScheduleTitle: '🕐 Müsait Saatler',
+    modalScheduleSubtitle: 'Öğrencinin ders alabileceği tüm saatleri işaretleyin (Ne kadar çok, o kadar iyi)',
+    scheduleTableHour: 'Saat',
+    scheduleTableDays: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+    displayDays: ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'],
+    btnConfirmSchedule: '✅ Onayla',
+    scheduleSelectedTitle: 'Seçilen saatler:', scheduleSelectedNote: 'Sistem bu saatlere göre eşleşme arayacak.',
+    alertNoSchedule: '⚠️ En az bir müsait saat seçin',
+    tcmNoResults: 'Sonuç yok', loadingActive: 'Aktif gruplar yükleniyor...', loadingPossible: 'Olası gruplar yükleniyor...',
+    errorConnection: 'Bağlantı hatası', noActiveGroups: 'Bu kriterlere uygun aktif grup yok',
+    noPossibleGroups: 'Bu kriterlere uygun olası grup yok',
+    btnSeeAllActive: n => `📋 Tüm ${n} aktif grubu gör`,
+    btnSeeAllPossible: n => `📋 Tüm ${n} olası grubu gör`,
+    btnSelect: 'Seç', btnSelected: '✓ Seçildi',
+    selectedCount1: '1 grup seçildi', selectedCount0: 'Hiç grup seçilmedi',
+    scheduleBtnMarked: n => `✅ ${n} saat işaretlendi`, btnSaving: '⏳ Kaydediliyor...',
+    cardBadgeActive: 'AKTİF GRUP', cardBadgePossible: 'OLASI GRUP', cardOptionPrefix: 'SEÇENEK',
+    cardTimezone: '(Saatiniz)', cardTimezoneRef: 'TUR',
+    cardMatchExact: '🎯 TAM EŞLEŞİM', cardMatchSameHour: '⏰ Aynı saat, farklı gün',
+    cardMatchSameDay: '🗓️ Aynı gün, farklı saat', cardFullWarning: '(Ancak grup dolu ⚠️)',
+    cardFull: '⚠️ GRUP DOLU - YETKİLENDİRME GEREKLİ', cardLastSpot: '🚨 SON KALAN KONTENJAN! 🚨',
+    cardUrgent2: '🚨 ACİL - 2 kontenjan 🚨', cardAlmost3: '⚠️ Neredeyse dolu - 3 kontenjan',
+    cardAlmostN: n => `⚠️ Neredeyse dolu - ${n} kontenjan`, cardRemainingUnit: 'kalan',
+    summaryAmoCrmLabel: 'AMO Link:', summaryAmoCrmLink: "Lead'e git",
+    summaryAgeLabel: 'Yaş:', summaryAgeUnit: 'yaş',
+    summaryClusterId: '🆔 Cluster ID:', summaryClusterNote: '(Kayıt sırasında panoya kopyalanacak)',
+    summaryAvailability: 'Müsaitlik:', summaryScheduleCount: n => `${n} saat`,
+    summaryPossibleGroup: 'Olası grup:', summarySelection: 'Seçim:',
+    summaryTagPossible: '[Olası]', summaryTagActive: '[Aktif]',
+    msgConnectionLimitedTitle: '⚠️ Bağlantı sınırlı', msgConnectionLimitedBody: 'Veriler yüklenemedi. Sayfayı yenilemeyi deneyin.',
+    msgIncompleteTitle: '⚠️ Eksik alanlar',
+    msgSelectCourse: 'Bir kurs seçin.', msgAgeRange: 'Yaş 7 ile 17 arasında olmalıdır.',
+    msgAmoRequired: 'AMO Link zorunludur.',
+    msgAmoInvalid: 'Geçersiz AMO Link. Beklenen format: https://kodland.amocrm.ru/leads/detail/12345',
+    msgMatchFoundTitle: '✅ Eşleşmeler bulundu', msgMatchFoundBody: 'Sonuçlar müsait saatlere göre filtrelendi.',
+    msgNoMatchTitle: '⚠️ Tam eşleşme yok', msgNoMatchBody: 'En yakın gruplar gösteriliyor.',
+    msgScheduleSavedTitle: '✅ Saatler kaydedildi', msgScheduleSavedBody: '"Grup Öner"e basarak sonuçları görebilirsiniz.',
+    msgSelectGroupSave: 'Kaydetmeden önce bir grup seçin.', msgSelectTcm: 'Listeden adınızı seçin.',
+    msgSavedTitle: '✅ Kayıt tamamlandı', msgSavedCluster: 'Talep kaydedildi. Cluster ID panoya kopyalandı.',
+    msgSavedOk: 'Talep başarıyla kaydedildi.',
+    msgErrorTitle: '❌ Hata', msgErrorSave: 'Kaydedilemedi. Lütfen tekrar deneyin.',
+    alertSaved: clip => `✅ Kayıt Tamamlandı!\n\n📋 PANOYA KOPYALANDI:\n"${clip}"\n\nÖdeme Formuna yapıştırabilirsiniz.`,
+  },
+};
+let T = TRANSLATIONS.latam;
+
 
 
 // ============================================
@@ -393,6 +686,75 @@ let preferredSchedule = [];
 let TCM_LIST = [];
 let isDragging = false;
 let dragCheckValue = true;
+
+// ============================================
+// TRADUCCIONES — DOM
+// ============================================
+function applyTranslations(regionKey) {
+  T = TRANSLATIONS[regionKey];
+  const el = id => document.getElementById(id);
+  const qs = sel => document.querySelector(sel);
+
+  // App subtitle
+  qs('#app-container > p').textContent = T.appSubtitle;
+
+  // Step headers
+  el('col1-header').textContent = T.col1Header;
+  el('col2-header').textContent = T.col2Header;
+  el('col3-header').textContent = T.col3Header;
+  el('col4-header').textContent = T.col4Header;
+
+  // Labels (usando for= como selector)
+  qs('label[for="amo_crm_link"]').textContent = T.labelAmoCrm;
+  qs('label[for="student_age"]').textContent = T.labelAge;
+  qs('label[for="client_timezone"]').textContent = T.labelTimezone;
+  qs('label[for="course_type"]').textContent = T.labelCourse;
+  qs('label[for="group_type"]').textContent = T.labelFormat;
+  qs('label[for="is_sen"]').textContent = T.labelSen;
+  el('col2-label').textContent = T.col2Label;
+  el('col3-label').textContent = T.col3Label;
+
+  qs('label[for="tcm_search"]').textContent = T.labelTcm;
+
+  // Placeholders
+  el('amo_crm_link').placeholder = T.placeholderAmoCrm;
+  el('tcm_search').placeholder = T.placeholderTcm;
+
+  // Format options
+  qs('#group_type option[value="regular"]').textContent = T.formatRegular;
+  qs('#group_type option[value="premium"]').textContent = T.formatPremium;
+
+  // Buttons
+  el('btn_select_schedule').textContent = T.btnSchedule;
+  el('btn_suggest').textContent = T.btnSuggest;
+  el('btn-confirm-schedule').textContent = T.btnConfirmSchedule;
+
+  // Result placeholders
+  el('course_recommendation').textContent = T.col2Placeholder;
+  el('possible_groups_list').innerHTML =
+    `<div class="text-center py-4"><i class="fas fa-hourglass-half text-gray-400 text-2xl mb-2"></i><p>${T.col3Placeholder}</p></div>`;
+
+  // Summary section
+  qs('#sale-summary h3').textContent = T.summaryTitle;
+  el('summary-content').textContent = T.summaryPlaceholder;
+  el('btn_submit_sale').textContent = T.btnSave;
+  el('save-note').textContent = T.saveNote;
+
+  // Modals
+  el('modal-active-title').textContent = T.modalActiveTitle;
+  el('modal-active-subtitle').textContent = T.modalActiveSubtitle;
+  el('modal-possible-title').textContent = T.modalPossibleTitle;
+  el('modal-possible-subtitle').textContent = T.modalPossibleSubtitle;
+  el('modal-schedule-title').textContent = T.modalScheduleTitle;
+  el('modal-schedule-subtitle').textContent = T.modalScheduleSubtitle;
+
+  // Schedule table headers (th[0]=Hora, th[1..7]=Mon-Sun)
+  const ths = document.querySelectorAll('#schedule-modal table thead th');
+  if (ths.length >= 8) {
+    ths[0].textContent = T.scheduleTableHour;
+    T.scheduleTableDays.forEach((d, i) => { ths[i + 1].textContent = d; });
+  }
+}
 
 // ============================================
 // SELECCIÓN DE REGIÓN
@@ -413,7 +775,7 @@ async function fetchCourseMap(url) {
 
 function populateCourseDropdown(courses) {
   const select = document.getElementById("course_type");
-  select.innerHTML = '<option value="">-- Selecciona el curso --</option>' +
+  select.innerHTML = `<option value="">${T.courseSelectPlaceholder}</option>` +
     courses.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
 }
 
@@ -445,17 +807,20 @@ async function selectRegion(regionKey) {
   document.getElementById('app-container').style.display = '';
   document.getElementById('connection-status').style.display = '';
 
+  // Aplica traducciones
+  applyTranslations(regionKey);
+
   // Carga lista de cursos y popula dropdown
   try {
     const courses = await fetchCourseMap(config.courseListCsv);
     if (courses.length > 0) {
       populateCourseDropdown(courses);
     } else {
-      document.getElementById("course_type").innerHTML = '<option value="">-- Sin cursos disponibles --</option>';
+      document.getElementById("course_type").innerHTML = `<option value="">${T.courseEmpty}</option>`;
     }
   } catch (e) {
     console.warn("⚠️ No se pudo cargar lista de cursos:", e);
-    document.getElementById("course_type").innerHTML = '<option value="">-- Error cargando cursos --</option>';
+    document.getElementById("course_type").innerHTML = `<option value="">${T.courseError}</option>`;
   }
 
   // Timezone por defecto según región
@@ -467,7 +832,7 @@ async function selectRegion(regionKey) {
   fetchCourseData().then(() => {
     updateDataSourceInfo();
   }).catch(() => {
-    showSystemMessage('warning', '⚠️ Conexión limitada', 'No se pudieron cargar los datos. Intenta refrescar la página.');
+    showSystemMessage('warning', T.msgConnectionLimitedTitle, T.msgConnectionLimitedBody);
   });
 }
 
@@ -477,9 +842,9 @@ async function selectRegion(regionKey) {
 function updateConnectionStatus(status) {
   const statusEl = document.getElementById('connection-status');
   statusEl.className = 'connection-status ' + status;
-  if (status === 'connected') statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Conectado';
-  else if (status === 'disconnected') statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> Sin conexión';
-  else statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
+  if (status === 'connected') statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${T.statusConnected}`;
+  else if (status === 'disconnected') statusEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${T.statusDisconnected}`;
+  else statusEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${T.statusConnecting}`;
 }
 
 function showSystemMessage(type, title, message) {
@@ -952,7 +1317,7 @@ function filterTCMList(query) {
   ).slice(0, 10);
 
   if (matches.length === 0) {
-    dropdown.innerHTML = '<div class="p-2 text-sm text-gray-500">Sin resultados</div>';
+    dropdown.innerHTML = `<div class="p-2 text-sm text-gray-500">${T.tcmNoResults}</div>`;
     dropdown.classList.remove("hidden");
     return;
   }
@@ -1121,36 +1486,36 @@ async function diagnoseAndMatch() {
   const amoRegex = /^https:\/\/kodland\.amocrm\.ru\/leads\/detail\/\d+/;
   const validationErrors = [];
   if (!courseTypeVal) {
-    validationErrors.push("Selecciona un curso.");
+    validationErrors.push(T.msgSelectCourse);
     document.getElementById("course_type").classList.add('field-error');
   }
   if (!ageVal || ageVal < 7 || ageVal > 17) {
-    validationErrors.push("La edad debe estar entre 7 y 17 años.");
+    validationErrors.push(T.msgAgeRange);
     document.getElementById("student_age").classList.add('field-error');
   }
   if (!amoCrmLink) {
-    validationErrors.push("El AMO Link es obligatorio.");
+    validationErrors.push(T.msgAmoRequired);
     document.getElementById("amo_crm_link").classList.add('field-error');
   } else if (!amoRegex.test(amoCrmLink)) {
-    validationErrors.push("AMO Link inválido. Formato esperado: https://kodland.amocrm.ru/leads/detail/12345");
+    validationErrors.push(T.msgAmoInvalid);
     document.getElementById("amo_crm_link").classList.add('field-error');
   }
   if (validationErrors.length > 0) {
-    showSystemMessage('error', '⚠️ Campos incompletos', validationErrors.join(' · '));
+    showSystemMessage('error', T.msgIncompleteTitle, validationErrors.join(' · '));
     return;
   }
 
   const activeDiv = document.getElementById("course_recommendation");
   const possibleDiv = document.getElementById("possible_groups_list");
 
-  activeDiv.innerHTML = '<span class="text-blue-600"><i class="fas fa-spinner fa-spin"></i> Cargando grupos activos...</span>';
-  possibleDiv.innerHTML = '<span class="text-blue-600"><i class="fas fa-spinner fa-spin"></i> Cargando grupos posibles...</span>';
+  activeDiv.innerHTML = `<span class="text-blue-600"><i class="fas fa-spinner fa-spin"></i> ${T.loadingActive}</span>`;
+  possibleDiv.innerHTML = `<span class="text-blue-600"><i class="fas fa-spinner fa-spin"></i> ${T.loadingPossible}</span>`;
 
   try {
-    await fetchCourseData(false); // No forzamos recarga para ser más rápidos
+    await fetchCourseData(false);
   } catch {
-    activeDiv.innerHTML = '<span class="text-red-600">Error de conexión</span>';
-    possibleDiv.innerHTML = '<span class="text-red-600">Error de conexión</span>';
+    activeDiv.innerHTML = `<span class="text-red-600">${T.errorConnection}</span>`;
+    possibleDiv.innerHTML = `<span class="text-red-600">${T.errorConnection}</span>`;
     return;
   }
 
@@ -1248,31 +1613,31 @@ async function diagnoseAndMatch() {
 
   // 4. RENDERIZADO
   if (filteredActive.length === 0) {
-    activeDiv.innerHTML = '<span class="text-gray-600">No hay grupos activos para estos criterios</span>';
+    activeDiv.innerHTML = `<span class="text-gray-600">${T.noActiveGroups}</span>`;
   } else {
     const top3Active = filteredActive.slice(0, 3);
     let html = renderCourseList(top3Active, true);
     if (filteredActive.length > 3) {
-      html += `<div class="mt-4 text-center"><button onclick="openCoursesModal()" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700">📋 Ver todos los ${filteredActive.length} grupos activos</button></div>`;
+      html += `<div class="mt-4 text-center"><button onclick="openCoursesModal()" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700">${T.btnSeeAllActive(filteredActive.length)}</button></div>`;
     }
     activeDiv.innerHTML = html;
   }
 
   if (filteredPossible.length === 0) {
-    possibleDiv.innerHTML = '<span class="text-gray-600">No hay grupos posibles para estos criterios</span>';
+    possibleDiv.innerHTML = `<span class="text-gray-600">${T.noPossibleGroups}</span>`;
   } else {
     const top3Possible = filteredPossible.slice(0, 3);
     let html = renderCourseList(top3Possible, false);
     if (filteredPossible.length > 3) {
-      html += `<div class="mt-4 text-center"><button onclick="openPossibleGroupsModal()" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700">📋 Ver todos los ${filteredPossible.length} grupos posibles</button></div>`;
+      html += `<div class="mt-4 text-center"><button onclick="openPossibleGroupsModal()" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700">${T.btnSeeAllPossible(filteredPossible.length)}</button></div>`;
     }
     possibleDiv.innerHTML = html;
   }
 
   if (preferredSchedule.length > 0) {
     const hasMatches = filteredActive.some(c => c.scheduleScore > 0) || filteredPossible.some(c => c.scheduleScore > 0);
-    if (hasMatches) showSystemMessage('success', '✅ Coincidencias encontradas', 'Resultados filtrados por disponibilidad horaria.');
-    else showSystemMessage('warning', '⚠️ Sin coincidencias exactas', 'Mostrando los grupos más cercanos.');
+    if (hasMatches) showSystemMessage('success', T.msgMatchFoundTitle, T.msgMatchFoundBody);
+    else showSystemMessage('warning', T.msgNoMatchTitle, T.msgNoMatchBody);
   }
 
   updatePitchDropdown();
@@ -1287,7 +1652,7 @@ function renderCourseList(courses, showIndex = true) {
   let html = "";
   
   const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-  const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const dayNames = T.displayDays;
 
   courses.forEach((course, idx) => {
     const remaining = course.capacity - course.enrolled;
@@ -1313,10 +1678,10 @@ function renderCourseList(courses, showIndex = true) {
         subTitle = course.name_es;       
     }
 
-    const displayIdx = showIndex ? `OPCIÓN ${idx + 1}` : `#${idx + 1}`;
-    const badge = course.type === 'possible' 
-      ? '<span class="course-option-badge badge-possible">GRUPO POSIBLE</span>'
-      : '<span class="course-option-badge badge-active">GRUPO ACTIVO</span>';
+    const displayIdx = showIndex ? `${T.cardOptionPrefix} ${idx + 1}` : `#${idx + 1}`;
+    const badge = course.type === 'possible'
+      ? `<span class="course-option-badge badge-possible">${T.cardBadgePossible}</span>`
+      : `<span class="course-option-badge badge-active">${T.cardBadgeActive}</span>`;
 
     // 1. CÁLCULO DE HORA VISUAL
     let displayTime = "";
@@ -1338,7 +1703,7 @@ function renderCourseList(courses, showIndex = true) {
        const finalM = clientDate.getMinutes().toString().padStart(2, '0');
        const finalDateStr = `${dName} ${dNum} ${mName}, ${finalH}:${finalM}`;
        
-       displayTime = `<b>${finalDateStr}</b> <span class="text-xs text-blue-600">(Tu hora)</span> <span class="text-gray-400 text-xs">| ${colTimeLabel} COL</span>`;
+       displayTime = `<b>${finalDateStr}</b> <span class="text-xs text-blue-600">${T.cardTimezone}</span> <span class="text-gray-400 text-xs">| ${colTimeLabel} ${T.cardTimezoneRef}</span>`;
     
     } else if (course.day && course.hora && hasValidTime) {
        const days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -1352,7 +1717,7 @@ function renderCourseList(courses, showIndex = true) {
        const [h, m] = course.hora.split(':');
        tempDate.setHours(h, m, 0); 
        const clientTimeFull = convertColombiaToClient(tempDate); 
-       displayTime = `<b>${clientTimeFull}</b> <span class="text-xs text-blue-600">(Tu hora)</span> <span class="text-gray-400 text-xs">| ${colTimeLabel} COL</span>`;
+       displayTime = `<b>${clientTimeFull}</b> <span class="text-xs text-blue-600">${T.cardTimezone}</span> <span class="text-gray-400 text-xs">| ${colTimeLabel} ${T.cardTimezoneRef}</span>`;
     } else {
        const safeDate = course.next_start || "Fecha Pendiente";
        displayTime = `${safeDate} <span class="text-gray-400 text-xs">| ${colTimeLabel} COL</span>`;
@@ -1364,7 +1729,7 @@ function renderCourseList(courses, showIndex = true) {
       ${subTitle ? `<div class="text-xs text-gray-500 mb-2 font-mono border-b pb-1 truncate" title="${subTitle}">${subTitle}</div>` : ""}
       
       <div class="course-option-row">📅 ${displayTime}</div>
-      <div class="course-option-row ${critical || course.isFull ? "text-orange-600 font-semibold" : ""}">💻 ${course.enrolled}/${course.capacity} (${remaining} restantes)</div>
+      <div class="course-option-row ${critical || course.isFull ? "text-orange-600 font-semibold" : ""}">💻 ${course.enrolled}/${course.capacity} (${remaining} ${T.cardRemainingUnit})</div>
       <div class="course-option-row">👨‍🏫 ${course.teacher}</div>`;
     
     // 3. LOGICA DE MENSAJES DE COINCIDENCIA (AQUÍ ESTÁ EL CAMBIO)
@@ -1387,28 +1752,26 @@ function renderCourseList(courses, showIndex = true) {
          const timeDiff = Math.abs(courseTimeMinutes - prefTimeMinutes);
 
          if (courseDay === prefDay && timeDiff <= 30) {
-             matchLabel = "🎯 Coincidencia EXACTA";
-             matchIcon = "🎯";
+             matchLabel = T.cardMatchExact;
              isExact = true;
-             break; // Encontramos la mejor, salimos
+             break;
          } else if (timeDiff <= 30 && !isExact) {
-             matchLabel = "⏰ Misma hora, diferente día";
-             matchIcon = "⏰";
-         } else if (courseDay === prefDay && timeDiff <= 120 && !isExact && matchLabel !== "⏰ Misma hora, diferente día") {
-             matchLabel = "🗓️ Mismo día, diferente hora";
-             matchIcon = "🗓️";
+             matchLabel = T.cardMatchSameHour;
+         } else if (courseDay === prefDay && timeDiff <= 120 && !isExact && matchLabel !== T.cardMatchSameHour) {
+             matchLabel = T.cardMatchSameDay;
          }
       }
 
       // Renderizamos la etiqueta si hubo algún match
       if (matchLabel) {
-        let colorClass = "text-green-700 bg-green-50 border border-green-200";
+        let colorClass = isExact ? "match-exact" : "match-partial";
         let extraText = "";
 
-        // Si está lleno, cambiamos el color y agregamos advertencia
-        if (course.isFull) {
-            colorClass = "text-orange-700 bg-orange-50 border border-orange-200";
-            extraText = " (Pero grupo lleno ⚠️)";
+        if (course.isFull && isExact) {
+            colorClass = "match-partial";
+            extraText = ` ${T.cardFullWarning}`;
+        } else if (course.isFull) {
+            extraText = ` ${T.cardFullWarning}`;
         }
         
         html += `<div class="course-option-row mt-2 p-1 rounded text-center text-sm font-bold ${colorClass}">
@@ -1419,18 +1782,18 @@ function renderCourseList(courses, showIndex = true) {
     
     // Alertas de cupo
 if (course.isFull) {
-  html += '<div class="course-option-urgency critical-text">⚠️ GRUPO LLENO - REQUIERE AUTORIZACIÓN</div>';
+  html += `<div class="course-option-urgency critical-text">${T.cardFull}</div>`;
 } else if (remaining === 1) {
-  html += '<div class="course-option-urgency critical-text">🚨 ¡ÚLTIMO CUPO DISPONIBLE! 🚨</div>';
+  html += `<div class="course-option-urgency critical-text">${T.cardLastSpot}</div>`;
 } else if (!isPremium && remaining === 2) {
-  html += '<div class="course-option-urgency critical-text">🚨 URGENTE - 2 cupos 🚨</div>';
+  html += `<div class="course-option-urgency critical-text">${T.cardUrgent2}</div>`;
 } else if (!isPremium && remaining === 3) {
-  html += '<div class="course-option-urgency warning-text">⚠️ Casi lleno - 3 cupos</div>';
+  html += `<div class="course-option-urgency warning-text">${T.cardAlmost3}</div>`;
 } else if (!isPremium && almostFull) {
-  html += `<div class="course-option-urgency warning-text">⚠️ Casi lleno - ${remaining} cupos</div>`;
+  html += `<div class="course-option-urgency warning-text">${T.cardAlmostN(remaining)}</div>`;
 }
     
-    html += `<button onclick="toggleCourseSelection('${course.id}')" class="btn-select mt-3 w-full ${isSelected ? "selected" : "unselected"}" id="btn-select-${course.id}">${isSelected ? "✓ Seleccionado" : "Seleccionar"}</button>
+    html += `<button onclick="toggleCourseSelection('${course.id}')" class="btn-select mt-3 w-full ${isSelected ? "selected" : "unselected"}" id="btn-select-${course.id}">${isSelected ? T.btnSelected : T.btnSelect}</button>
     </div>`;
   });
   return html;
@@ -1458,14 +1821,14 @@ function updateSelectionUI() {
     const isSelected = selectedCourses.some(c => c.id === course.id);
     if (btn) {
       btn.className = `btn-select mt-3 w-full ${isSelected ? "selected" : "unselected"}`;
-      btn.textContent = isSelected ? "✓ Seleccionado" : "Seleccionar";
+      btn.textContent = isSelected ? T.btnSelected : T.btnSelect;
     }
     if (card) {
       isSelected ? card.classList.add("selected") : card.classList.remove("selected");
     }
   });
   const countEl = document.getElementById("selected-count");
-  if (countEl) countEl.textContent = selectedCourses.length === 1 ? "1 grupo seleccionado" : "Ningún grupo seleccionado";
+  if (countEl) countEl.textContent = selectedCourses.length === 1 ? T.selectedCount1 : T.selectedCount0;
 }
 
 function updatePitchDropdown() {
@@ -1483,37 +1846,37 @@ function updateSaleSummary() {
   const isSen = document.getElementById("is_sen").checked;
   
   if (selectedCourses.length === 0) {
-    summaryContent.innerHTML = '<p class="text-gray-500">Selecciona un grupo para ver el resumen.</p>';
+    summaryContent.innerHTML = `<p class="text-gray-500">${T.summaryPlaceholder}</p>`;
     return;
   }
   
   let html = '<div class="space-y-2">';
-  if (amoCrm) html += `<div><strong>AMO Link:</strong> <a href="${amoCrm}" target="_blank" class="text-blue-600 hover:underline">Ver lead</a></div>`;
-  html += `<div><strong>Edad:</strong> ${age} años</div>`;
+  if (amoCrm) html += `<div><strong>${T.summaryAmoCrmLabel}</strong> <a href="${amoCrm}" target="_blank" class="text-blue-600 hover:underline">${T.summaryAmoCrmLink}</a></div>`;
+  html += `<div><strong>${T.summaryAgeLabel}</strong> ${age} ${T.summaryAgeUnit}</div>`;
   
   // --- NUEVO: MOSTRAR CLUSTER ID SI EXISTE ---
   // Buscamos si hay algún grupo posible seleccionado con ID
   const possibleGroup = selectedCourses.find(c => c.type === 'possible' && c.semanticId);
   if (possibleGroup) {
       html += `<div class="bg-yellow-100 p-2 rounded border border-yellow-300 text-yellow-800">
-        <strong>🆔 Cluster ID:</strong> <span class="font-mono text-lg font-bold">${possibleGroup.semanticId}</span>
-        <div class="text-xs mt-1 text-gray-600">(Se copia al portapapeles al guardar)</div>
+        <strong>${T.summaryClusterId}</strong> <span class="font-mono text-lg font-bold">${possibleGroup.semanticId}</span>
+        <div class="text-xs mt-1 text-gray-600">${T.summaryClusterNote}</div>
       </div>`;
   }
   // -------------------------------------------
 
   const scheduleParts = [];
-  if (preferredSchedule.length > 0) scheduleParts.push(`${preferredSchedule.length} horarios`);
+  if (preferredSchedule.length > 0) scheduleParts.push(T.summaryScheduleCount(preferredSchedule.length));
   selectedCourses.filter(c => c.type === 'possible' && c.next_start).forEach(c => {
-    scheduleParts.push(`Grupo posible: ${c.next_start}`);
+    scheduleParts.push(`${T.summaryPossibleGroup} ${c.next_start}`);
   });
   if (scheduleParts.length > 0) {
-    html += `<div><strong>Disponibilidad:</strong> ${scheduleParts.join(' | ')}</div>`;
+    html += `<div><strong>${T.summaryAvailability}</strong> ${scheduleParts.join(' | ')}</div>`;
   }
-  
-  html += `<div class="mt-2 border-t pt-2"><strong>Selección:</strong></div>`;
+
+  html += `<div class="mt-2 border-t pt-2"><strong>${T.summarySelection}</strong></div>`;
   selectedCourses.forEach((c, idx) => {
-    const typeLabel = c.type === 'possible' ? ' [Posible]' : ' [Activo]';
+    const typeLabel = c.type === 'possible' ? ` ${T.summaryTagPossible}` : ` ${T.summaryTagActive}`;
     html += `<div class="text-sm pl-2">• ${c.name_es}${typeLabel}</div>`;
   });
   html += '</div>';
@@ -1609,13 +1972,13 @@ function closeScheduleModal() {
 function submitPreferredSchedule() {
   const checkboxes = document.querySelectorAll('.schedule-checkbox:checked');
   if (checkboxes.length === 0) {
-    alert("⚠️ Selecciona al menos un horario preferido");
+    alert(T.alertNoSchedule);
     return;
   }
-  
+
   preferredSchedule = [];
-  // Mapa para traducir códigos a nombres cortos
-  const dayMap = {'mon': 'Lun', 'tue': 'Mar', 'wed': 'Mié', 'thu': 'Jue', 'fri': 'Vie', 'sat': 'Sáb', 'sun': 'Dom'};
+  const dayKeys = ['mon','tue','wed','thu','fri','sat','sun'];
+  const dayMap = Object.fromEntries(dayKeys.map((k, i) => [k, T.scheduleTableDays[i]]));
   let summaryParts = [];
 
   checkboxes.forEach(cb => {
@@ -1629,36 +1992,72 @@ function submitPreferredSchedule() {
   
   const btn = document.getElementById("btn_select_schedule");
   btn.classList.add("selected");
-  btn.innerHTML = `✅ ${checkboxes.length} horarios marcados`;
-  
-  // AQUÍ ESTÁ EL CAMBIO VISUAL
+  btn.innerHTML = T.scheduleBtnMarked(checkboxes.length);
+
   const summary = document.getElementById("schedule-summary");
   summary.classList.remove("hidden");
   summary.className = "mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800";
   summary.innerHTML = `
-    <div class="font-bold mb-1"><i class="fas fa-clock"></i> Horarios seleccionados:</div>
+    <div class="font-bold mb-1"><i class="fas fa-clock"></i> ${T.scheduleSelectedTitle}</div>
     <div class="text-gray-700">${summaryParts.join(", ")}</div>
-    <div class="text-xs text-gray-500 mt-1 italic">El sistema buscará coincidencias basadas en estos horarios.</div>
+    <div class="text-xs text-gray-500 mt-1 italic">${T.scheduleSelectedNote}</div>
   `;
-  
-  showSystemMessage('success', '✅ Horarios guardados', 'Presiona "Sugerir Grupos" para ver los resultados.');
+
+  showSystemMessage('success', T.msgScheduleSavedTitle, T.msgScheduleSavedBody);
   closeScheduleModal();
+}
+
+function resetForNextStudent() {
+  // State
+  selectedCourses = [];
+  preferredSchedule = [];
+  allFilteredCourses = [];
+  allFilteredPossibleGroups = [];
+
+  // Form fields
+  document.getElementById("amo_crm_link").value = "";
+  document.getElementById("student_age").value = "";
+  document.getElementById("is_sen").checked = false;
+  document.getElementById("course_type").value = "";
+  document.getElementById("group_type").value = "";
+  const defaultTz = { latam: -5, brazil: -3, turkey: 3 };
+  document.getElementById("client_timezone").value = defaultTz[currentRegion] ?? -5;
+
+  const schedBtn = document.getElementById("btn_select_schedule");
+  schedBtn.classList.remove("selected");
+  schedBtn.textContent = T.btnSchedule;
+  const schedSummary = document.getElementById("schedule-summary");
+  schedSummary.textContent = "";
+  schedSummary.classList.add("hidden");
+
+  // Result columns
+  document.getElementById("course_recommendation").textContent = T.col2Placeholder;
+  document.getElementById("possible_groups_list").innerHTML =
+    `<div class="text-center py-4"><i class="fas fa-hourglass-half text-gray-400 text-2xl mb-2"></i><p>${T.col3Placeholder}</p></div>`;
+
+  // Summary & save button
+  document.getElementById("summary-content").textContent = T.summaryPlaceholder;
+  const btn = document.getElementById("btn_submit_sale");
+  btn.disabled = true;
+  btn.innerHTML = T.btnSave;
+
+  // Clear banners
+  document.getElementById("system-messages").innerHTML = "";
 }
 
 async function submitSale() {
   const tcmName = document.getElementById("tcm_name").value.trim();
   const errors = [];
-  if (selectedCourses.length === 0) errors.push("Selecciona un grupo antes de guardar.");
-  if (!tcmName) errors.push("Selecciona tu nombre de la lista.");
+  if (selectedCourses.length === 0) errors.push(T.msgSelectGroupSave);
+  if (!tcmName) errors.push(T.msgSelectTcm);
   if (errors.length > 0) {
-    showSystemMessage('error', '⚠️ Campos incompletos', errors.join(' · '));
+    showSystemMessage('error', T.msgIncompleteTitle, errors.join(' · '));
     return;
   }
 
   // 2. Preparar datos
-  const dayMapES = {'mon':'Lun','tue':'Mar','wed':'Mié','thu':'Jue','fri':'Vie','sat':'Sáb','sun':'Dom'};
-  const dayMapEN = {'mon':'Mon','tue':'Tue','wed':'Wed','thu':'Thu','fri':'Fri','sat':'Sat','sun':'Sun'};
-  const dayMap = currentRegion === 'latam' ? dayMapES : dayMapEN;
+  const dayKeys = ['mon','tue','wed','thu','fri','sat','sun'];
+  const dayMap = Object.fromEntries(dayKeys.map((k, i) => [k, T.scheduleTableDays[i]]));
   const scheduleText = preferredSchedule.length > 0
     ? preferredSchedule.map(s => `${dayMap[s.day] || s.day} ${s.hour}:00`).join(", ")
     : "";
@@ -1700,7 +2099,7 @@ async function submitSale() {
   const btn = document.getElementById("btn_submit_sale");
   const originalText = btn.innerHTML; // Guardamos el HTML original (icono + texto)
   btn.disabled = true;
-  btn.innerText = "⏳ Guardando...";
+  btn.innerText = T.btnSaving;
 
   try {
     // 3. Enviar a Google Sheets
@@ -1725,21 +2124,20 @@ async function submitSale() {
     }
 
     // 5. Feedback Final
-    showSystemMessage('success', '✅ Registro guardado', copyMessage ? 'Solicitud registrada. Cluster ID copiado al portapapeles.' : 'La solicitud se registró correctamente.');
-    
-    // Alerta visual para confirmar el copiado antes de recargar
+    showSystemMessage('success', T.msgSavedTitle, copyMessage ? T.msgSavedCluster : T.msgSavedOk);
+
     if (copyMessage) {
-        alert("✅ ¡Registro Guardado!\n" + copyMessage + "\n\nYa puedes pegarlo en el Formulario de Pago.");
+        const textToCopy = `Selector Tool - Cluster ${selectedCourses.find(c => c.type === 'possible' && c.semanticId)?.semanticId}`;
+        alert(T.alertSaved(textToCopy));
     }
     
-    // Recargar
-    setTimeout(() => { location.reload(); }, 2000); // Un poco menos de tiempo para agilidad
+    setTimeout(() => { resetForNextStudent(); }, 2000);
     
   } catch (error) {
     console.error("❌ Error:", error);
     btn.disabled = false;
     btn.innerHTML = originalText;
-    showSystemMessage('error', '❌ Error', 'No se pudo guardar. Intenta de nuevo.');
+    showSystemMessage('error', T.msgErrorTitle, T.msgErrorSave);
   }
 }
 
