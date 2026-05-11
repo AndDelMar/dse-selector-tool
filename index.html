@@ -231,7 +231,8 @@
         <label for="student_age" class="block text-sm font-medium text-gray-700 mb-1">
           Edad del estudiante:
         </label>
-        <input type="number" id="student_age" min="7" max="17" value="10"
+        <input type="number" id="student_age" min="5" max="17" value="10"
+               onchange="handleFieldChange()"
                class="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500" />
 
 
@@ -246,14 +247,14 @@
         <label for="course_type" class="block text-sm font-medium text-gray-700 mb-1">
           Curso:
         </label>
-        <select id="course_type" class="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500">
+        <select id="course_type" onchange="handleFieldChange()" class="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500">
           <option value="">-- Cargando cursos... --</option>
         </select>
 
         <label for="group_type" class="block text-sm font-medium text-gray-700 mb-1">
           Formato:
         </label>
-        <select id="group_type"
+        <select id="group_type" onchange="handleFieldChange()"
                 class="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500">
           <option value="regular">Regular</option>
           <option value="premium">Premium (PRM)</option>
@@ -528,7 +529,7 @@ const TRANSLATIONS = {
     summaryTagPossible: '[Posible]', summaryTagActive: '[Activo]',
     msgConnectionLimitedTitle: '⚠️ Conexión limitada', msgConnectionLimitedBody: 'No se pudieron cargar los datos. Intenta refrescar la página.',
     msgIncompleteTitle: '⚠️ Campos incompletos',
-    msgSelectCourse: 'Selecciona un curso.', msgAgeRange: 'La edad debe estar entre 7 y 17 años.',
+    msgSelectCourse: 'Selecciona un curso.', msgAgeRange: 'La edad debe estar entre 5 y 17 años.',
     msgAmoRequired: 'El AMO Link es obligatorio.',
     msgAmoInvalid: 'AMO Link inválido. Formato esperado: https://kodland.amocrm.ru/leads/detail/12345',
     msgMatchFoundTitle: '✅ Coincidencias encontradas', msgMatchFoundBody: 'Resultados filtrados por disponibilidad horaria.',
@@ -539,6 +540,7 @@ const TRANSLATIONS = {
     msgSavedOk: 'La solicitud se registró correctamente.',
     msgErrorTitle: '❌ Error', msgErrorSave: 'No se pudo guardar. Intenta de nuevo.',
     alertSaved: clip => `✅ ¡Registro Guardado!\n\n📋 COPIADO AL PORTAPAPELES:\n"${clip}"\n\nYa puedes pegarlo en el Formulario de Pago.`,
+    teacherTbd: 'Por asignar',
   },
   brazil: {
     statusConnecting: 'Conectando...', statusConnected: 'Conectado', statusDisconnected: 'Sem conexão',
@@ -550,7 +552,7 @@ const TRANSLATIONS = {
     courseLoading: '-- Carregando cursos... --', courseSelectPlaceholder: '-- Selecione o curso --',
     courseEmpty: '-- Sem cursos disponíveis --', courseError: '-- Erro ao carregar cursos --',
     labelFormat: 'Formato:', formatRegular: 'Regular', formatPremium: 'Premium (PRM)',
-    btnSchedule: '🕐 Disponibilidade de horário', labelSen: '⭐ Aluno SEN', btnSuggest: '🔍 Sugerir Grupos',
+    btnSchedule: '🕐 Disponibilidade de horário', labelSen: '⭐ Aluno NEE', btnSuggest: '🔍 Sugerir Grupos',
     col2Header: 'Grupos Ativos', col2Label: 'Grupos ativos sugeridos:',
     col2Placeholder: "Preencha os dados do aluno e clique em 'Sugerir Grupos' para ver os resultados.",
     col3Header: 'Grupos Possíveis', col3Label: 'Grupos por demanda:',
@@ -582,7 +584,7 @@ const TRANSLATIONS = {
     cardMatchSameDay: '🗓️ Mesmo dia, horário diferente', cardFullWarning: '(Mas grupo lotado ⚠️)',
     cardFull: '⚠️ GRUPO LOTADO - REQUER AUTORIZAÇÃO', cardLastSpot: '🚨 ÚLTIMA VAGA DISPONÍVEL! 🚨',
     cardUrgent2: '🚨 URGENTE - 2 vagas 🚨', cardAlmost3: '⚠️ Quase lotado - 3 vagas',
-    cardAlmostN: n => `⚠️ Quase lotado - ${n} vagas`, cardRemainingUnit: 'restantes',
+    cardAlmostN: n => `⚠️ Quase lotado - ${n} vagas`, cardRemainingUnit: 'disponíveis',
     summaryAmoCrmLabel: 'AMO Link:', summaryAmoCrmLink: 'Ver lead',
     summaryAgeLabel: 'Idade:', summaryAgeUnit: 'anos',
     summaryClusterId: '🆔 Cluster ID:', summaryClusterNote: '(Será copiado para a área de transferência ao salvar)',
@@ -591,7 +593,7 @@ const TRANSLATIONS = {
     summaryTagPossible: '[Possível]', summaryTagActive: '[Ativo]',
     msgConnectionLimitedTitle: '⚠️ Conexão limitada', msgConnectionLimitedBody: 'Não foi possível carregar os dados. Tente atualizar a página.',
     msgIncompleteTitle: '⚠️ Campos incompletos',
-    msgSelectCourse: 'Selecione um curso.', msgAgeRange: 'A idade deve estar entre 7 e 17 anos.',
+    msgSelectCourse: 'Selecione um curso.', msgAgeRange: 'A idade deve estar entre 5 e 17 anos.',
     msgAmoRequired: 'O AMO Link é obrigatório.',
     msgAmoInvalid: 'AMO Link inválido. Formato esperado: https://kodland.amocrm.ru/leads/detail/12345',
     msgMatchFoundTitle: '✅ Correspondências encontradas', msgMatchFoundBody: 'Resultados filtrados por disponibilidade de horário.',
@@ -602,6 +604,7 @@ const TRANSLATIONS = {
     msgSavedOk: 'A solicitação foi registrada com sucesso.',
     msgErrorTitle: '❌ Erro', msgErrorSave: 'Não foi possível salvar. Tente novamente.',
     alertSaved: clip => `✅ Registro Salvo!\n\n📋 COPIADO PARA A ÁREA DE TRANSFERÊNCIA:\n"${clip}"\n\nJá pode colar no Formulário de Pagamento.`,
+    teacherTbd: 'A definir',
   },
   turkey: {
     statusConnecting: 'Bağlanıyor...', statusConnected: 'Bağlandı', statusDisconnected: 'Bağlantı yok',
@@ -654,7 +657,7 @@ const TRANSLATIONS = {
     summaryTagPossible: '[Olası]', summaryTagActive: '[Aktif]',
     msgConnectionLimitedTitle: '⚠️ Bağlantı sınırlı', msgConnectionLimitedBody: 'Veriler yüklenemedi. Sayfayı yenilemeyi deneyin.',
     msgIncompleteTitle: '⚠️ Eksik alanlar',
-    msgSelectCourse: 'Bir kurs seçin.', msgAgeRange: 'Yaş 7 ile 17 arasında olmalıdır.',
+    msgSelectCourse: 'Bir kurs seçin.', msgAgeRange: 'Yaş 5 ile 17 arasında olmalıdır.',
     msgAmoRequired: 'AMO Link zorunludur.',
     msgAmoInvalid: 'Geçersiz AMO Link. Beklenen format: https://kodland.amocrm.ru/leads/detail/12345',
     msgMatchFoundTitle: '✅ Eşleşmeler bulundu', msgMatchFoundBody: 'Sonuçlar müsait saatlere göre filtrelendi.',
@@ -665,6 +668,7 @@ const TRANSLATIONS = {
     msgSavedOk: 'Talep başarıyla kaydedildi.',
     msgErrorTitle: '❌ Hata', msgErrorSave: 'Kaydedilemedi. Lütfen tekrar deneyin.',
     alertSaved: clip => `✅ Kayıt Tamamlandı!\n\n📋 PANOYA KOPYALANDI:\n"${clip}"\n\nÖdeme Formuna yapıştırabilirsiniz.`,
+    teacherTbd: 'Atanacak',
   },
 };
 let T = TRANSLATIONS.latam;
@@ -824,6 +828,7 @@ async function selectRegion(regionKey) {
   }
 
   // Timezone por defecto según región
+  populateTimezones(regionKey);
   const defaultTz = { latam: -5, brazil: -3, turkey: 3 };
   document.getElementById("client_timezone").value = defaultTz[regionKey];
 
@@ -1229,7 +1234,7 @@ function mapRowsToPossibleGroups(headers, rows) {
       interest: inferInterest(courseName),
       courseType: extractCourseType(courseName, courseName),
       next_start: `${day} | ${hora}`,
-      teacher: "Por asignar",
+      teacher: T.teacherTbd,
       type: 'possible',
       semanticId: semanticId,
       clusterScore: clusterScore // <--- GUARDAMOS EL PUNTAJE AQUÍ
@@ -1489,7 +1494,7 @@ async function diagnoseAndMatch() {
     validationErrors.push(T.msgSelectCourse);
     document.getElementById("course_type").classList.add('field-error');
   }
-  if (!ageVal || ageVal < 7 || ageVal > 17) {
+  if (!ageVal || ageVal < 5 || ageVal > 17) {
     validationErrors.push(T.msgAgeRange);
     document.getElementById("student_age").classList.add('field-error');
   }
@@ -2148,26 +2153,20 @@ async function submitSale() {
 // Offset de Colombia (UTC-5)
 const COLOMBIA_OFFSET = -5; 
 
-function populateTimezones() {
+function populateTimezones(regionKey) {
   const select = document.getElementById("client_timezone");
   let html = "";
-  
-  // Generar de UTC-12 a UTC+14
+
+  const refsLatam = { '-5': ' (Colombia/Perú)', '-6': ' (México CDMX)', '+2': ' (España)', '-3': ' (Argentina)', '-4': ' (Chile)' };
+  const refsBrazil = { '-5': ' (Acre)', '-4': ' (Amazonas)', '-3': ' (Brasília)', '-2': ' (Fernando de Noronha)', '-6': ' (México CDMX)', '+2': ' (España)' };
+  const refs = regionKey === 'brazil' ? refsBrazil : refsLatam;
+
   for (let i = -12; i <= 14; i++) {
     const sign = i >= 0 ? "+" : "";
     const label = `UTC${sign}${i}:00`;
-    // Seleccionar Colombia/Perú/EST (UTC-5) por defecto
-    const isSelected = i === -5 ? "selected" : "";
-    
-    // Agregamos algunas referencias comunes para ayudar al TCM (opcional, pero recomendado)
-    let ref = "";
-if (i === -5) ref = " (Colombia/Perú)";
-else if (i === -6) ref = " (México CDMX)";
-else if (i === 2) ref = " (España)";
-else if (i === -3) ref = " (Argentina)";
-else if (i === -4) ref = " (Chile)";
-    
-    html += `<option value="${i}" ${isSelected}>${label}${ref}</option>`;
+    const key = `${sign}${i}`;
+    const ref = refs[key] || "";
+    html += `<option value="${i}">${label}${ref}</option>`;
   }
   select.innerHTML = html;
 }
@@ -2212,8 +2211,7 @@ function convertColombiaToClient(colDateObj) {
   const clientDate = new Date(colDateObj);
   clientDate.setHours(clientDate.getHours() + diff);
   
-  const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-  const dayName = days[clientDate.getDay()];
+  const dayName = T.displayDays[clientDate.getDay()];
   
   const h = clientDate.getHours().toString().padStart(2, '0');
   const m = clientDate.getMinutes().toString().padStart(2, '0');
@@ -2222,9 +2220,14 @@ function convertColombiaToClient(colDateObj) {
 }
 
 function updateTimezoneDisplay() {
-  // Cuando cambia la zona horaria, refrescamos los cálculos si hay resultados
   if (allFilteredCourses.length > 0 || allFilteredPossibleGroups.length > 0) {
-    diagnoseAndMatch(); 
+    diagnoseAndMatch();
+  }
+}
+
+function handleFieldChange() {
+  if (allFilteredCourses.length > 0 || allFilteredPossibleGroups.length > 0) {
+    diagnoseAndMatch();
   }
 }
 
@@ -2243,7 +2246,7 @@ function formatTimeHHMM(timeStr) {
 
 window.onload = () => {
   document.addEventListener('mouseup', () => { isDragging = false; });
-  populateTimezones();
+  populateTimezones('latam');
   document.getElementById("student_age").value = 10;
   setInterval(() => { if (lastFetchTime) updateDataSourceInfo(); }, 30000);
 };
