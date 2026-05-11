@@ -505,6 +505,7 @@ const CENTRAL_SHEET_ID = "1YNeyHpv12xZYU4ml1bzczoJN1myydZLBXGyWJtJbKBs";
 
 const REGION_CONFIG = {
   latam: {
+    sheetTimezoneOffset: -5,
     active: {
       csv: `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?gid=${SHEET_GID}&single=true&output=csv`,
       json: `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${SHEET_GID}`
@@ -518,6 +519,7 @@ const REGION_CONFIG = {
     salesScriptUrl: "https://script.google.com/macros/s/AKfycbxkhc55bmSOhSDHTQhrLuq4cqC2xJ1oJO5a-xythsjrgMo-KBPACj0zCiDnpHxm_vR0Lg/exec"
   },
   brazil: {
+    sheetTimezoneOffset: -3,
     active: null,
     possible: {
       csv: "https://docs.google.com/spreadsheets/d/13Ex-2PA9374XNaPyfhNfMbM5VyrXrsixA1VgkTkk_40/export?format=csv&gid=711101762",
@@ -528,6 +530,7 @@ const REGION_CONFIG = {
     salesScriptUrl: "https://script.google.com/macros/s/AKfycbzsh1J1Mt6IgRp4U-YTWlBvPIzxktvX9MIgOj1-HY_ftQoKxDu9u6uswlJCrpIFs_hKpw/exec"
   },
   turkey: {
+    sheetTimezoneOffset: +3,
     active: null,
     possible: {
       csv: "https://docs.google.com/spreadsheets/d/1Z5b3A5lzFp4gUYBjJY6-VD9OPfBXGaTlLOlsiewccyQ/export?format=csv&gid=1962452144",
@@ -889,6 +892,7 @@ function populateCourseDropdown(courses) {
 async function selectRegion(regionKey) {
   const config = REGION_CONFIG[regionKey];
   currentRegion = regionKey;
+  SHEET_OFFSET = config.sheetTimezoneOffset;
 
   // Actualiza fuentes de datos globales
   DATA_SOURCES = { active: config.active, possible: config.possible };
@@ -1798,7 +1802,7 @@ function renderCourseList(courses, showIndex = true) {
 
     if (course.startDateObj && hasValidTime && course.timeStr) {
        const clientOffset = parseInt(document.getElementById("client_timezone").value);
-       const diff = clientOffset - COLOMBIA_OFFSET;
+       const diff = clientOffset - SHEET_OFFSET;
        const clientDate = new Date(course.startDateObj);
        const [h, m] = course.timeStr.split(':');
        clientDate.setHours(parseInt(h), parseInt(m));
@@ -1970,7 +1974,7 @@ function renderPossibleMatrix(groups) {
     if (colDayIdx === undefined) return;
 
     const colHour = Math.floor(course.timeMinutes / 60);
-    const diff = clientOffset - COLOMBIA_OFFSET;
+    const diff = clientOffset - SHEET_OFFSET;
     let clientHour = colHour + diff;
     let clientDayIdx = colDayIdx;
     if (clientHour < 0)        { clientHour += 24; clientDayIdx = (clientDayIdx - 1 + 7) % 7; }
@@ -2469,8 +2473,10 @@ async function submitSale() {
 // LÓGICA DE ZONA HORARIA
 // ============================================
 
-// Offset de Colombia (UTC-5)
-const COLOMBIA_OFFSET = -5; 
+// Offset base de Colombia (UTC-5) — referencia para grupos activos LatAm
+const COLOMBIA_OFFSET = -5;
+// Offset del sheet activo según la región — se actualiza en selectRegion()
+let SHEET_OFFSET = -5;
 
 function populateTimezones(regionKey) {
   const select = document.getElementById("client_timezone");
@@ -2491,10 +2497,10 @@ function populateTimezones(regionKey) {
   select.innerHTML = html;
 }
 
-// Convierte (Día/Hora Cliente) -> (Día/Hora Colombia) para BUSCAR en la base de datos
+// Convierte (Día/Hora Cliente) -> (Día/Hora Sheet) para BUSCAR en la base de datos
 function convertClientToColombia(dayStr, hourInt) {
   const clientOffset = parseInt(document.getElementById("client_timezone").value);
-  const diff = COLOMBIA_OFFSET - clientOffset; // Ej: España (+1). Diff = -5 - 1 = -6 horas.
+  const diff = SHEET_OFFSET - clientOffset;
   
   // Días numéricos para manejar cambios de día (0=Dom, 1=Lun...)
   const days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -2520,12 +2526,12 @@ function convertClientToColombia(dayStr, hourInt) {
   return { day: days[newDayIndex], hour: newHour };
 }
 
-// Convierte (Hora Colombia) -> (Hora Cliente) para MOSTRAR en la tarjeta
+// Convierte (Hora Sheet) -> (Hora Cliente) para MOSTRAR en la tarjeta
 function convertColombiaToClient(colDateObj) {
   if (!colDateObj) return "N/A";
-  
+
   const clientOffset = parseInt(document.getElementById("client_timezone").value);
-  const diff = clientOffset - COLOMBIA_OFFSET; // Ej: España (+1). Diff = 1 - (-5) = +6 horas.
+  const diff = clientOffset - SHEET_OFFSET;
   
   // Clonamos la fecha para no modificar la original
   const clientDate = new Date(colDateObj);
