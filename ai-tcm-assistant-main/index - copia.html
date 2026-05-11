@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DSE Selector Tool</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color:#f8fafc; }
+    #app-container { max-width:1400px; margin:40px auto; padding:20px; background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.05); }
+    .card { background:#fff; border-radius:12px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,.05); margin-bottom:20px; }
+    .step-header { background:#f1f5f9; padding:10px 15px; border-radius:8px; font-weight:600; color:#1e293b; margin-bottom:15px; }
+    .result-box { min-height:120px; background:#f9fafb; border-radius:8px; padding:12px 14px; margin-top:8px; border:1px solid #e5e7eb; white-space:normal; }
+    .ai-result-box { background:#ecfdf5; border-left:4px solid #10b981; padding:15px; border-radius:6px; }
+    .error-box { background:#fef2f2; border-left:4px solid #ef4444; padding:15px; border-radius:6px; margin:10px 0; }
+    .warning-box { background:#fffbeb; border-left:4px solid #f59e0b; padding:15px; border-radius:6px; margin:10px 0; }
+    .success-box { background:#f0fdf4; border-left:4px solid #22c55e; padding:15px; border-radius:6px; margin:10px 0; }
+    .course-option { border-radius:10px; border:1px solid #e5e7eb; background:#fff; padding:10px 12px; margin-bottom:10px; }
+    .course-option.critical { background:#fef2f2; border-color:#fecaca; }
+    .course-option.almost-full { background:#fffbeb; border-color:#fcd34d; }
+    .course-option.selected { background:#dbeafe; border:2px solid #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    .course-option.possible-group { background:#f0fdf4; border-color:#86efac; }
+    .course-option-title { font-weight:600; margin-bottom:6px; color:#111827; }
+    .course-option-row { font-size:.875rem; color:#374151; margin-bottom:2px; }
+    .course-option-row strong { font-weight:600; }
+    .course-option-urgency { font-size:.85rem; margin-top:4px; }
+    .course-option-urgency.critical-text { color:#b91c1c; font-weight:700; }
+    .course-option-urgency.warning-text { color:#d97706; font-weight:600; }
+    .course-option-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-top: 4px; }
+    .badge-possible { background: #d1fae5; color: #065f46; }
+    .badge-active { background: #dbeafe; color: #1e40af; }
+    .connection-status { position: fixed; top: 20px; right: 20px; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; z-index: 1000; }
+    .connection-status.connected { background: #22c55e; color: white; }
+    .connection-status.disconnected { background: #ef4444; color: white; }
+    .connection-status.loading { background: #3b82f6; color: white; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9998; display: none; }
+    .modal-overlay.active { display: block; }
+    .modal-container { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 12px; max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto; z-index: 9999; box-shadow: 0 20px 60px rgba(0,0,0,0.3); display: none; }
+    .modal-container.active { display: block; }
+    .modal-header { position: sticky; top: 0; background: white; padding: 20px; border-bottom: 2px solid #e5e7eb; z-index: 10; }
+    .modal-body { padding: 20px; }
+    .btn-select { padding: 8px 16px; border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+    .btn-select.selected { background: #3b82f6; color: white; }
+    .btn-select.unselected { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+    .btn-select.unselected:hover { background: #e5e7eb; }
+    .btn-select.disabled { opacity: 0.5; cursor: not-allowed; }
+    .schedule-btn { background: #f97316; color: white; padding: 10px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; width: 100%; margin-top: 12px; border: none; }
+    .schedule-btn:hover { background: #ea580c; }
+    .schedule-btn.selected { background: #22c55e; }
+    .schedule-cell { user-select: none; cursor: pointer; transition: background-color 0.1s; }
+    .schedule-cell.checked { background-color: #dbeafe; }
+    .field-error { border-color: #ef4444 !important; }
+    #region-selector { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; padding: 40px 20px; }
+    .region-card { background: white; border-radius: 16px; padding: 40px 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; border: 2px solid transparent; text-align: center; min-width: 220px; }
+    .region-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,0.14); border-color: #3b82f6; }
+    .region-card .region-flag { font-size: 3rem; margin-bottom: 12px; }
+    .region-card .region-name { font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-bottom: 6px; }
+    .region-card .region-desc { font-size: 0.875rem; color: #64748b; }
+  </style>
+</head>
+
+<body>
+  <div id="connection-status" class="connection-status loading" style="display:none;">
+    <i class="fas fa-spinner fa-spin"></i> Conectando...
+  </div>
+
+  <!-- PANTALLA DE SELECCIÓN DE REGIÓN -->
+  <div id="region-selector">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl font-extrabold text-gray-900 mb-3">🤖 DSE Selector Tool</h1>
+      <p class="text-gray-500 text-lg">Select your region to get started</p>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-6">
+      <div class="region-card" onclick="selectRegion('latam')">
+        <div class="region-flag">🌎</div>
+        <div class="region-name">LatAm</div>
+        <div class="region-desc">América Latina</div>
+      </div>
+      <div class="region-card" onclick="selectRegion('brazil')">
+        <div class="region-flag">🇧🇷</div>
+        <div class="region-name">Brazil</div>
+        <div class="region-desc">Brasil</div>
+      </div>
+      <div class="region-card" onclick="selectRegion('turkey')">
+        <div class="region-flag">🇹🇷</div>
+        <div class="region-name">MENA</div>
+        <div class="region-desc">Middle East & North Africa</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-container" style="display:none;">
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-4 text-center">
+      🤖 DSE Selector Tool
+    </h1>
+    <p class="text-center text-gray-600 mb-6">
+      Herramienta para agrupar solicitudes de apertura y reducir los tiempos de espera.
+    </p>
+
+    <div id="system-messages"></div>
+
+    <!-- FILA SUPERIOR: 3 COLUMNAS -->
+    <div id="top-row-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+      <!-- COLUMNA 1: Diagnóstico -->
+      <div class="card">
+        <div class="step-header">1. Diagnóstico del Estudiante</div>
+
+        <label for="amo_crm_link" class="block text-sm font-medium text-gray-700 mb-1">
+          🔗 AMO CRM Link:
+        </label>
+        <input type="url" id="amo_crm_link" placeholder="https://kodland.amocrm.ru/leads/detail/..."
+               class="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500" />
+
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+  👤 Nombre del TCM:
+</label>
+<input type="text" id="tcm_search"
+       placeholder="Busca por código o nombre (ej: L382)"
+       oninput="filterTCMList(this.value)"
+       autocomplete="off"
+       class="w-full p-2 border border-gray-300 rounded-lg mb-1 focus:ring-blue-500 focus:border-blue-500"/>
+<div id="tcm_dropdown"
+     class="hidden border border-gray-200 rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg mb-3 z-50 relative">
+</div>
+<input type="hidden" id="tcm_name"/>
+        
+        <label for="student_age" class="block text-sm font-medium text-gray-700 mb-1">
+          Edad del estudiante:
+        </label>
+        <input type="number" id="student_age" min="7" max="17" value="10"
+               class="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500" />
+
+
+
+        <label for="client_timezone" class="block text-sm font-medium text-gray-700 mb-1">
+          🌍 Zona Horaria:
+        </label>
+        <select id="client_timezone" onchange="updateTimezoneDisplay()" 
+                class="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm">
+          </select>
+
+        <label for="course_type" class="block text-sm font-medium text-gray-700 mb-1">
+          Curso:
+        </label>
+        <select id="course_type" class="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500">
+          <option value="">-- Cargando cursos... --</option>
+        </select>
+
+        <label for="group_type" class="block text-sm font-medium text-gray-700 mb-1">
+          Formato:
+        </label>
+        <select id="group_type"
+                class="w-full p-2 border border-gray-300 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500">
+          <option value="regular">Regular</option>
+          <option value="premium">Premium (PRM)</option>
+        </select>
+
+        <button id="btn_select_schedule" onclick="openPreferredScheduleModal()" class="schedule-btn">
+          🕐 Disponibilidad horaria
+        </button>
+        <div id="schedule-summary" class="text-xs text-gray-600 mt-2 hidden"></div>
+
+        <div class="flex items-center mb-4 mt-4 p-3 bg-gray-50 rounded-lg">
+          <input type="checkbox" id="is_sen" 
+                 class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+          <label for="is_sen" class="ml-2 text-sm font-medium text-gray-700">
+            ⭐ Estudiante SEN
+          </label>
+        </div>
+
+        <button id="btn_suggest"
+                onclick="diagnoseAndMatch()"
+                class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-150">
+          🔍 Sugerir Grupos
+        </button>
+
+        <div class="mt-2 text-xs text-gray-500">
+          <span id="data-source-info">Data source: <b>Conectando...</b></span>
+        </div>
+      </div>
+
+      <!-- COLUMNA 2: TOP 3 GRUPOS ACTIVOS -->
+      <div id="col-active-groups" class="card">
+        <div class="step-header">Grupos Activos</div>
+
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Grupos activos sugeridos:
+        </label>
+        <div id="course_recommendation" class="result-box text-gray-800 text-sm">
+          Completa los datos del estudiante y presiona 'Sugerir Grupos' para ver resultados.
+        </div>
+      </div>
+
+      <!-- COLUMNA 3: GRUPOS POSIBLES -->
+      <div class="card">
+        <div class="step-header">Grupos Posibles</div>
+
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Grupos por demanda:
+        </label>
+        <div id="possible_groups_list" class="result-box text-gray-600 text-sm">
+          <div class="text-center py-4">
+            <i class="fas fa-hourglass-half text-gray-400 text-2xl mb-2"></i>
+            <p>Completa los datos del estudiante y presiona 'Sugerir Grupos' para ver resultados.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FILA INFERIOR: 2 COLUMNAS -->
+    <div class="grid grid-cols-1 gap-6">
+
+
+
+      <!-- COLUMNA 2: ENVIAR VENTA -->
+      <div class="card bg-gradient-to-br from-blue-50 to-purple-50">
+        <div class="step-header bg-blue-100">Confirmar y Guardar</div>
+
+        <div id="sale-summary" class="mb-4 p-3 bg-white rounded-lg border border-blue-200">
+          <h3 class="font-semibold text-gray-800 mb-2">📋 Resumen:</h3>
+          <div id="summary-content" class="text-sm text-gray-600">
+            Selecciona un grupo para ver el resumen.
+          </div>
+        </div>
+
+        <button id="btn_submit_sale"
+                onclick="submitSale()"
+                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition duration-150 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled>
+        💾 Guardar
+        </button>
+
+        <p class="text-xs text-gray-500 mt-2 text-center">
+          Los datos se registrarán automáticamente.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal para ver todos los cursos activos -->
+  <div id="modal-overlay" class="modal-overlay" onclick="closeCoursesModal()"></div>
+  <div id="courses-modal" class="modal-container">
+    <div class="modal-header">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">Grupos Activos Disponibles</h2>
+          <p class="text-sm text-gray-600 mt-1">Selecciona un grupo para registrar la solicitud</p>
+        </div>
+        <button onclick="closeCoursesModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">
+          ×
+        </button>
+      </div>
+      <div id="selected-count" class="mt-3 text-sm font-semibold text-blue-600"></div>
+    </div>
+    <div id="modal-courses-list" class="modal-body"></div>
+  </div>
+
+  <!-- Modal para ver todos los grupos posibles -->
+  <div id="possible-modal-overlay" class="modal-overlay" onclick="closePossibleGroupsModal()"></div>
+  <div id="possible-groups-modal" class="modal-container">
+    <div class="modal-header">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">Grupos Posibles Disponibles</h2>
+          <p class="text-sm text-gray-600 mt-1">Grupos creados por demanda</p>
+        </div>
+        <button onclick="closePossibleGroupsModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">
+          ×
+        </button>
+      </div>
+    </div>
+    <div id="modal-possible-groups-list" class="modal-body"></div>
+  </div>
+
+  <!-- Modal para Preferred Schedule -->
+  <div id="schedule-modal-overlay" class="modal-overlay" onclick="closeScheduleModal()"></div>
+  <div id="schedule-modal" class="modal-container">
+    <div class="modal-header">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">🕐 Disponibilidad Horaria</h2>
+          <p class="text-sm text-gray-600 mt-1">Marca todos los horarios en los que el estudiante puede tomar clases (Cuantos más, mejor)</p>
+        </div>
+        <button onclick="closeScheduleModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">
+          ×
+        </button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div style="overflow-x: auto;">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="border p-2 font-semibold">Hora</th>
+              <th class="border p-2 font-semibold">Lun</th>
+              <th class="border p-2 font-semibold">Mar</th>
+              <th class="border p-2 font-semibold">Mié</th>
+              <th class="border p-2 font-semibold">Jue</th>
+              <th class="border p-2 font-semibold">Vie</th>
+              <th class="border p-2 font-semibold">Sáb</th>
+              <th class="border p-2 font-semibold">Dom</th>
+            </tr>
+          </thead>
+          <tbody id="schedule-table-body"></tbody>
+        </table>
+      </div>
+      <button onclick="submitPreferredSchedule()" 
+              class="w-full bg-orange-600 text-white p-3 rounded-lg font-semibold hover:bg-orange-700 transition duration-150 mt-4">
+        ✅ Confirmar
+      </button>
+    </div>
+  </div>
+
+  <script>
+
+// ============================================
+// CONFIGURACIÓN DE SPREADSHEETS (MODO PÚBLICO)
+// ============================================
+
+// 1. IDs de las Hojas PUBLICADAS EN LA WEB (Empiezan por 2PACX...)
+const SHEET_ID = "2PACX-1vRiopvWS8N7E_A7G10Y85jND6Pl7n2Acgm4tdeQRImxtRuGS1mUuSHyQavLytAelrP1fsLU_8EcHH6e";
+const SHEET_GID = "2084392899"; // GID de la pestaña de Activos en la versión pública
+
+const POSSIBLE_GROUPS_SHEET_ID = "2PACX-1vRfJ1Dc2mTlooFRM6Jc0r-zKyrjmbWFGCOaT3UeiOc0vyihrxBL8UaN3n8Z0QxxJDfSEwzQYn1-YmIM";
+const POSSIBLE_GROUPS_GID = "1601359885";
+
+
+const CENTRAL_SHEET_ID = "1YNeyHpv12xZYU4ml1bzczoJN1myydZLBXGyWJtJbKBs";
+
+const REGION_CONFIG = {
+  latam: {
+    active: {
+      csv: `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?gid=${SHEET_GID}&single=true&output=csv`,
+      json: `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${SHEET_GID}`
+    },
+    possible: {
+      csv: `https://docs.google.com/spreadsheets/d/e/${POSSIBLE_GROUPS_SHEET_ID}/pub?gid=${POSSIBLE_GROUPS_GID}&single=true&output=csv`,
+      json: `https://docs.google.com/spreadsheets/d/e/${POSSIBLE_GROUPS_SHEET_ID}/gviz/tq?tqx=out:json&gid=${POSSIBLE_GROUPS_GID}`
+    },
+    tcmCsv: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRmilalgl45zdxkUNF1V5xe4jivECd6BGyqg4vTV5ZJ0S3zzi0IjSgstlZXjTGjJenxEU93tjDb4RxI/pub?gid=208053934&single=true&output=csv",
+    courseListCsv: `https://docs.google.com/spreadsheets/d/${CENTRAL_SHEET_ID}/export?format=csv&gid=0`,
+    salesScriptUrl: "https://script.google.com/macros/s/AKfycbxkhc55bmSOhSDHTQhrLuq4cqC2xJ1oJO5a-xythsjrgMo-KBPACj0zCiDnpHxm_vR0Lg/exec"
+  },
+  brazil: {
+    active: null,
+    possible: {
+      csv: "https://docs.google.com/spreadsheets/d/13Ex-2PA9374XNaPyfhNfMbM5VyrXrsixA1VgkTkk_40/export?format=csv&gid=711101762",
+      json: "https://docs.google.com/spreadsheets/d/13Ex-2PA9374XNaPyfhNfMbM5VyrXrsixA1VgkTkk_40/gviz/tq?tqx=out:json&gid=711101762"
+    },
+    tcmCsv: `https://docs.google.com/spreadsheets/d/${CENTRAL_SHEET_ID}/export?format=csv&gid=2096614143`,
+    courseListCsv: `https://docs.google.com/spreadsheets/d/${CENTRAL_SHEET_ID}/export?format=csv&gid=567922396`,
+    salesScriptUrl: "https://script.google.com/macros/s/AKfycbzsh1J1Mt6IgRp4U-YTWlBvPIzxktvX9MIgOj1-HY_ftQoKxDu9u6uswlJCrpIFs_hKpw/exec"
+  },
+  turkey: {
+    active: null,
+    possible: {
+      csv: "https://docs.google.com/spreadsheets/d/1Z5b3A5lzFp4gUYBjJY6-VD9OPfBXGaTlLOlsiewccyQ/export?format=csv&gid=1962452144",
+      json: "https://docs.google.com/spreadsheets/d/1Z5b3A5lzFp4gUYBjJY6-VD9OPfBXGaTlLOlsiewccyQ/gviz/tq?tqx=out:json&gid=1962452144"
+    },
+    tcmCsv: `https://docs.google.com/spreadsheets/d/${CENTRAL_SHEET_ID}/export?format=csv&gid=971800836`,
+    courseListCsv: `https://docs.google.com/spreadsheets/d/${CENTRAL_SHEET_ID}/export?format=csv&gid=732223650`,
+    salesScriptUrl: "https://script.google.com/macros/s/AKfycbzsh1J1Mt6IgRp4U-YTWlBvPIzxktvX9MIgOj1-HY_ftQoKxDu9u6uswlJCrpIFs_hKpw/exec"
+  }
+};
+
+let currentRegion = null;
+let TCM_LIST_CSV = "";
+let DATA_SOURCES = { active: null, possible: null };
+
+
+
+// ============================================
+// VARIABLES GLOBALES
+// ============================================
+let LIVE_COURSE_DATA = [];
+let LIVE_POSSIBLE_GROUPS = [];
+let connectionStatus = { connected: false, method: null };
+let lastFetchTime = null;
+let isFetching = false;
+let allFilteredCourses = [];
+let allFilteredPossibleGroups = [];
+let selectedCourses = [];
+let preferredSchedule = [];
+let TCM_LIST = [];
+let isDragging = false;
+let dragCheckValue = true;
+
+// ============================================
+// SELECCIÓN DE REGIÓN
+// ============================================
+async function fetchCourseMap(url) {
+  const resp = await fetch(url + "&_=" + Date.now(), { cache: "no-store" });
+  const text = await resp.text();
+  const { rows } = parseCSVRobust(text);
+  // rows[0] = fila 2 del sheet (sub-cabecera); datos desde rows[1] = C3
+  return rows.slice(1).map(r => {
+    const colC = (r[2] || "").trim();
+    const colG = (r[6] || "").trim();
+    const match = colC.match(/\[(\d+)\]/);
+    if (!match || !colG) return null;
+    return { id: parseInt(match[1]), name: colG };
+  }).filter(Boolean);
+}
+
+function populateCourseDropdown(courses) {
+  const select = document.getElementById("course_type");
+  select.innerHTML = '<option value="">-- Selecciona el curso --</option>' +
+    courses.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+}
+
+async function selectRegion(regionKey) {
+  const config = REGION_CONFIG[regionKey];
+  currentRegion = regionKey;
+
+  // Actualiza fuentes de datos globales
+  DATA_SOURCES = { active: config.active, possible: config.possible };
+  TCM_LIST_CSV = config.tcmCsv;
+
+  // Actualiza título
+  const labels = { latam: 'LatAm', brazil: 'Brazil', turkey: 'MENA' };
+  document.querySelector('#app-container h1').textContent = '🤖 DSE Selector Tool – ' + labels[regionKey];
+
+  // Muestra/oculta columna de activos y ajusta grid
+  const colActive = document.getElementById('col-active-groups');
+  const grid = document.getElementById('top-row-grid');
+  if (config.active) {
+    colActive.style.display = '';
+    grid.className = 'grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6';
+  } else {
+    colActive.style.display = 'none';
+    grid.className = 'grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6';
+  }
+
+  // Muestra la app
+  document.getElementById('region-selector').style.display = 'none';
+  document.getElementById('app-container').style.display = '';
+  document.getElementById('connection-status').style.display = '';
+
+  // Carga lista de cursos y popula dropdown
+  try {
+    const courses = await fetchCourseMap(config.courseListCsv);
+    if (courses.length > 0) {
+      populateCourseDropdown(courses);
+    } else {
+      document.getElementById("course_type").innerHTML = '<option value="">-- Sin cursos disponibles --</option>';
+    }
+  } catch (e) {
+    console.warn("⚠️ No se pudo cargar lista de cursos:", e);
+    document.getElementById("course_type").innerHTML = '<option value="">-- Error cargando cursos --</option>';
+  }
+
+  // Timezone por defecto según región
+  const defaultTz = { latam: -5, brazil: -3, turkey: 3 };
+  document.getElementById("client_timezone").value = defaultTz[regionKey];
+
+  // Carga datos de grupos y TCMs
+  fetchTCMList();
+  fetchCourseData().then(() => {
+    updateDataSourceInfo();
+  }).catch(() => {
+    showSystemMessage('warning', '⚠️ Conexión limitada', 'No se pudieron cargar los datos. Intenta refrescar la página.');
+  });
+}
+
+// ============================================
+// FUNCIONES DE UI Y CONEXIÓN
+// ============================================
+function updateConnectionStatus(status) {
+  const statusEl = document.getElementById('connection-status');
+  statusEl.className = 'connection-status ' + status;
+  if (status === 'connected') statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Conectado';
+  else if (status === 'disconnected') statusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> Sin conexión';
+  else statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
+}
+
+function showSystemMessage(type, title, message) {
+  const container = document.getElementById('system-messages');
+  const msgId = 'msg-' + Date.now();
+  const html = `<div id="${msgId}" class="${type}-box"><div style="display: flex; justify-content: space-between; align-items: start;"><div><strong>${title}</strong><p class="text-sm mt-1">${message}</p></div><button onclick="document.getElementById('${msgId}').remove()" class="text-gray-500 hover:text-gray-700"><i class="fas fa-times"></i></button></div></div>`;
+  container.innerHTML = html + container.innerHTML;
+  if (type === 'success') setTimeout(() => { const el = document.getElementById(msgId); if (el) el.remove(); }, 5000);
+}
+
+// ============================================
+// FUNCIONES DE PARSING MEJORADAS
+// ============================================
+
+// ==========================================
+// PARSER CSV AVANZADO (SOPORTA MULTI-LÍNEA)
+// ==========================================
+function parseCSVRobust(text) {
+  const rows = [];
+  let currentRow = [];
+  let currentCell = "";
+  let inQuotes = false;
+
+  // Recorremos el texto letra por letra para no confundirnos
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+
+    // 1. Manejo de Comillas
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        // Si hay doble comilla dentro de comillas, es una comilla literal
+        currentCell += '"';
+        i++; // Saltamos la siguiente
+      } else {
+        // Entramos o salimos del modo "protegido"
+        inQuotes = !inQuotes;
+      }
+    }
+    // 2. Manejo de Separador (Coma)
+    else if (char === ',' && !inQuotes) {
+      // Solo separamos columna si NO estamos dentro de comillas
+      currentRow.push(currentCell.trim());
+      currentCell = "";
+    }
+    // 3. Manejo de Fin de Fila (Enter)
+    else if ((char === '\n' || char === '\r') && !inQuotes) {
+      // Solo cambiamos de fila si NO estamos dentro de comillas
+      if (char === '\r' && nextChar === '\n') i++; // Manejo de saltos Windows
+
+      currentRow.push(currentCell.trim());
+      // Guardamos la fila si tiene datos
+      if (currentRow.length > 1 || currentRow[0] !== "") {
+        rows.push(currentRow);
+      }
+      currentRow = [];
+      currentCell = "";
+    }
+    // 4. Carácter normal
+    else {
+      currentCell += char;
+    }
+  }
+
+  // Guardar lo último que quedó en memoria
+  if (currentCell || currentRow.length > 0) {
+    currentRow.push(currentCell.trim());
+    rows.push(currentRow);
+  }
+
+  // Separar encabezados del resto
+  const headers = rows.length > 0 ? rows[0] : [];
+  const dataRows = rows.slice(1);
+
+  return { headers, rows: dataRows };
+}
+
+function parseAgeRange(ageStr) {
+  const m = String(ageStr || "").match(/(\d+)\D+(\d+)/);
+  return m ? { min: parseInt(m[1],10), max: parseInt(m[2],10) } : { min: 7, max: 17 };
+}
+
+function inferInterest(courseTitle) {
+  const t = String(courseTitle || "").toLowerCase();
+  
+  // Coding y Videojuegos
+  if (
+    t.includes("funtech") ||
+    t.includes("scratch") ||
+    t.includes("minecraft") ||
+    t.includes("roblox") ||
+    t.includes("python") ||
+    t.includes("unity") ||
+    t.includes("web") ||
+    t.includes("godot") ||
+    t.includes("game") ||
+    t.includes("c#")
+  ) {
+    return "coding";
+  }
+  
+  // Media y Diseño
+  if (
+    t.includes("drawing") ||
+    t.includes("dibujo") ||
+    t.includes("ilustra") ||
+    t.includes("creatividad") ||
+    t.includes("creativity") ||
+    t.includes("fwd") ||
+    t.includes("blender") ||
+    t.includes("graphic") ||
+    t.includes("design") ||
+    t.includes("diseño") ||
+    t.includes("figma") ||
+    t.includes("art") ||
+    t.includes("3d")
+  ) {
+    return "design";
+  }
+  
+  // Default
+  return "coding";
+}
+
+function extractCourseType(courseName, courseTitle) {
+  const fullText = `${courseName || ""} ${courseTitle || ""}`.toLowerCase().trim();
+  
+  // Lista de detección con niveles (orden importa - específicos primero)
+  const courseMap = {
+    // Coding y Videojuegos (específicos primero)
+    "minecraft lvl 2": ["minecraft lvl 2", "minecraft level 2", "minecraft nivel 2", "minecraft 2"],
+    "minecraft": ["minecraft"],
+    
+    "roblox lvl 2": ["roblox lvl 2", "roblox level 2", "roblox nivel 2", "roblox 2", "roblox game developer lvl 2"],
+    "roblox": ["roblox"],
+    
+    "python pro": ["python pro", "python avanzado", "python advanced", "python lvl 2", "python lvl2", "python level 2", "python nivel 2", "pythonlvl2"],
+    "python": ["python new", "python fundamentos", "python básico"], // Solo básico
+    
+    "funtech": ["funtech", "fun tech", "explorers"],
+    "scratch": ["scratch", "magia", "código"],
+    "unity": ["unity", "c#"],
+    "web": ["web", "html", "css", "diseño web"],
+    "godot": ["godot"],
+    
+    // Media y Diseño (específicos primero)
+    "digital creativity 2": ["creatividad digital nivel 2", "digital creativity 2", "creatividad 2", "creativity 2"],
+    "digital creativity 1": ["creatividad digital nivel 1", "digital creativity 1", "creatividad 1", "creativity 1"],
+    "drawing": ["drawing", "dibujo"],
+    "ilustración": ["ilustra", "ilustracion", "illustration"],
+    "fwd pro": ["fwd", "blender", "fantastic world"],
+    "graphic design": ["graphic", "grafico", "diseño gráfico"]
+  };
+  
+  // Buscar coincidencia (los específicos se comprueban primero)
+  for (const [cleanName, keywords] of Object.entries(courseMap)) {
+    for (const keyword of keywords) {
+      if (fullText.includes(keyword)) {
+        // Formatear el nombre con capitalización correcta
+        return cleanName
+          .split(' ')
+          .map(word => word === 'lvl' ? 'lvl' : word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+      }
+    }
+  }
+  
+  // Fallback: retornar el título original limpio (sin IDs)
+  const cleaned = (courseTitle || courseName || "Curso")
+    .replace(/ID\s*\d+:/gi, "")
+    .replace(/\$\d+/g, "")
+    .trim();
+  return cleaned;
+}
+
+function parseISODateOnly(s) {
+  const m = String(s || "").match(/(\d{4}-\d{2}-\d{2})/);
+  if (!m) return null;
+  const d = new Date(m[1] + "T00:00:00");
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function parseTimeToMinutes(timeStr) {
+  const match = String(timeStr || "").match(/(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  return parseInt(match[1]) * 60 + parseInt(match[2]);
+}
+
+function parseDayAbbreviation(dayStr) {
+  const dayMap = {
+    'mon': 'lunes', 'monday': 'lunes',
+    'tue': 'martes', 'tuesday': 'martes',  
+    'wed': 'miércoles', 'wednesday': 'miércoles',
+    'thu': 'jueves', 'thursday': 'jueves',
+    'fri': 'viernes', 'friday': 'viernes',
+    'sat': 'sábado', 'saturday': 'sábado',
+    'sun': 'domingo', 'sunday': 'domingo',
+    'lun': 'lunes', 'lunes': 'lunes',
+    'mar': 'martes', 'martes': 'martes',
+    'mié': 'miércoles', 'mie': 'miércoles', 'miércoles': 'miércoles', 'miercoles': 'miércoles',
+    'jue': 'jueves', 'jueves': 'jueves',
+    'vie': 'viernes', 'viernes': 'viernes',
+    'sáb': 'sábado', 'sab': 'sábado', 'sábado': 'sábado', 'sabado': 'sábado',
+    'dom': 'domingo', 'domingo': 'domingo'
+  };
+  const normalized = String(dayStr || "").toLowerCase().trim();
+  return dayMap[normalized] || normalized;
+}
+    function getDayOfWeekFromDate(dateObj) {
+  if (!dateObj) return null;
+  
+  const dayMap = {
+    0: 'domingo',
+    1: 'lunes',
+    2: 'martes',
+    3: 'miércoles',
+    4: 'jueves',
+    5: 'viernes',
+    6: 'sábado'
+  };
+  
+  return dayMap[dateObj.getDay()];
+}
+
+// ============================================
+// MAPEO DE DATOS: GRUPOS ACTIVOS (CORREGIDO CON NOMBRE EXACTO)
+// ============================================
+function mapRowsToCourses(headers, rows) {
+  // 1. DIAGNÓSTICO DE ENCABEZADOS
+  console.group("🔍 DIAGNÓSTICO DE COLUMNAS");
+  // console.log("Todos los encabezados:", headers); // Descomentar si necesitas ver todos
+
+  const findCol = (name) => headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
+  
+  const idx_group = findCol("group_title");
+  const idx_course = findCol("course_title");
+  const idx_age = findCol("age");
+  const idx_capacity = findCol("capacity");
+  const idx_enrolled = findCol("enrolled");
+  const idx_status = findCol("status");
+  const idx_teacher = findCol("teacher");
+  
+  const idx_date = findCol("first_lesson_date"); 
+  
+  // --- CORRECCIÓN AQUÍ: USAMOS EL NOMBRE EXACTO QUE ENCONTRASTE ---
+  let idx_time = findCol("first_lesson_time_gmt_5"); 
+  
+  // Fallback por si acaso cambia en el futuro
+  if (idx_time === -1) idx_time = findCol("time_gmt"); 
+  if (idx_time === -1) idx_time = findCol("first_lesson_time");
+
+  console.log(`✅ Índice 'course_title': ${idx_course}`);
+  console.log(`✅ Índice 'first_lesson_date': ${idx_date}`);
+  console.log(`✅ Índice 'first_lesson_time_gmt_5': ${idx_time}`); // ESTE YA NO DEBE SER -1
+  console.groupEnd();
+
+  const courses = [];
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const oneWeekAgo = new Date(today);
+  oneWeekAgo.setDate(today.getDate() - 7);
+
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    
+    // OBTENCIÓN DE DATOS
+    const internalCode = idx_group >= 0 ? (r[idx_group] || "") : "";
+    const name = idx_course >= 0 ? (r[idx_course] || internalCode) : internalCode; 
+    
+    // LECTURA DE HORA CON DEBUGGING (Solo primeras 3 filas)
+    const rawDate = idx_date >= 0 ? r[idx_date] : "";
+    const rawTime = idx_time >= 0 ? r[idx_time] : "";
+    
+    // Usamos la función de limpieza formatTimeHHMM que ya tienes
+    const timeStr = formatTimeHHMM(rawTime); 
+
+    if (i < 3) {
+        console.log(`📝 FILA ${i}: Fecha="${rawDate}" | Hora Raw="${rawTime}" | Hora Limpia="${timeStr}"`);
+    }
+
+    // FILTROS DE CALIDAD
+    const capacity = idx_capacity >= 0 ? parseInt(r[idx_capacity] || "0") : 0;
+    const enrolled = idx_enrolled >= 0 ? parseInt(r[idx_enrolled] || "0") : 0;
+    const status = idx_status >= 0 ? (r[idx_status] || "").toLowerCase() : "";
+    
+    if (!name || (status && status !== "active")) continue;
+    if (name.includes("WRONG") || name.includes("ERROR")) continue;
+    if (capacity > 0 && enrolled > capacity) continue;
+
+    const startDate = parseISODateOnly(rawDate);
+    if (startDate && startDate < oneWeekAgo) continue;
+
+    // Extracción de ID y Edad
+    const idMatch = name.match(/\[(\d+)\]/);
+    const courseId = idMatch ? parseInt(idMatch[1]) : 0;
+    const ageVal = idx_age >= 0 ? r[idx_age] : "";
+    const ageRange = parseAgeRange(ageVal);
+
+    courses.push({
+      id: `active_${i}_${courseId}`,
+      courseId: courseId,
+      name_es: name,
+      topic: name,
+      internalCode: internalCode,
+      min_age: ageRange.min,
+      max_age: ageRange.max,
+      interest: inferInterest(name),
+      courseType: extractCourseType(name, name),
+      enrolled: enrolled,
+      capacity: capacity,
+      isFull: capacity > 0 && enrolled >= capacity,
+      next_start: rawDate && timeStr ? `${rawDate} | ${timeStr}` : (rawDate || "N/A"),
+      teacher: idx_teacher >= 0 ? r[idx_teacher] : "Tutor N/A",
+      startDateObj: startDate,
+      timeStr: timeStr, // <--- ESTA ES LA VARIABLE CLAVE QUE AHORA SÍ TENDRÁ DATOS
+      timeMinutes: parseTimeToMinutes(timeStr),
+      day: startDate ? getDayOfWeekFromDate(startDate) : null,
+      type: 'active'
+    });
+  }
+  
+  console.log(`✅ Loaded ${courses.length} active groups.`);
+  return courses;
+}
+
+// ============================================
+// MAPEO DE DATOS: GRUPOS POSIBLES (CON PUNTAJE COLUMNA M)
+// ============================================
+function mapRowsToPossibleGroups(headers, rows) {
+  const groups = [];
+  
+  console.log("=== PARSING POSSIBLE GROUPS ===");
+  
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    const semanticId = (r[21] || "").trim(); // Columna V (ID Semántico)
+    
+    // --- NUEVO: LEER PUNTAJE DE COLUMNA M (Índice 12) ---
+    // Convertimos a flotante por si tiene decimales, si falla es 0
+    let rawScore = r[12] || "0";
+    // Limpieza básica por si viene con texto
+    rawScore = rawScore.replace(/,/g, '.').replace(/[^\d.-]/g, ''); 
+    const clusterScore = parseFloat(rawScore) || 0;
+    // ----------------------------------------------------
+
+    const courseName = (r[0] || "").trim();
+    const format = (r[1] || "").toLowerCase().trim();
+    const dayRaw = (r[2] || "").trim();
+    const hora = (r[3] || "").trim();
+    const students = parseInt(r[4] || "0");
+    const ageRangeStr = r[6] || "";
+
+    // ID de referencia Columna U (Índice 20)
+    let idRef = 0;
+    try { idRef = parseInt(r[20] || "0"); } catch (e) { idRef = 0; }
+
+    if (!courseName || courseName.startsWith("•") || !dayRaw) continue;
+
+    const day = parseDayAbbreviation(dayRaw);
+    const ageRange = parseAgeRange(ageRangeStr);
+    const isPremium = format.includes("prm") || format.includes("premium");
+    const capacity = isPremium ? 4 : 14;
+
+    if (students > capacity) continue;
+
+    const group = {
+      id: `possible_${i}_${courseName}_${day}_${hora}`,
+      courseId: idRef,
+      name_es: courseName,
+      topic: courseName,
+      courseTitle: courseName,
+      format: isPremium ? "premium" : "regular",
+      day: day,
+      dayRaw: dayRaw,
+      hora: hora,
+      timeMinutes: parseTimeToMinutes(hora),
+      enrolled: students,
+      capacity: capacity,
+      isFull: students >= capacity,
+      min_age: ageRange.min,
+      max_age: ageRange.max,
+      interest: inferInterest(courseName),
+      courseType: extractCourseType(courseName, courseName),
+      next_start: `${day} | ${hora}`,
+      teacher: "Por asignar",
+      type: 'possible',
+      semanticId: semanticId,
+      clusterScore: clusterScore // <--- GUARDAMOS EL PUNTAJE AQUÍ
+    };
+    
+    groups.push(group);
+  }
+  
+  console.log(`✅ Loaded ${groups.length} possible groups.`);
+  return groups;
+}
+
+
+// ============================================
+// FUNCIONES DE FETCH - MEJORADAS
+// ============================================
+async function fetchWithCSV(dataSource) {
+  let targetUrl = dataSource.csv + "&_=" + Date.now();
+  
+  const resp = await fetch(targetUrl, { cache: "no-store" });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const text = await resp.text();
+  return parseCSVRobust(text);
+}
+
+async function fetchWithGViz(dataSource) {
+  let url = dataSource.json + "&_=" + Date.now();
+  let resp;
+  try {
+    resp = await fetch(url, { mode: 'cors', cache: "no-store" });
+  } catch {
+    url = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    resp = await fetch(url, { cache: "no-store" });
+  }
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  let text = await resp.text();
+  text = text.replace(/^.*?google\.visualization\.Query\.setResponse\(/, '').replace(/\);?\s*$/, '');
+  const data = JSON.parse(text);
+  const headers = data.table.cols.map(col => col.label || col.id || "");
+  const rows = data.table.rows.map(row => row.c.map(cell => cell ? (cell.v || "") : ""));
+  return { headers, rows };
+}
+
+function updateDataSourceInfo() {
+  const el = document.getElementById('data-source-info');
+  if (lastFetchTime) {
+    const diffSec = Math.floor((new Date() - lastFetchTime) / 1000);
+    const timeAgo = diffSec < 60 ? `${diffSec}s` : `${Math.floor(diffSec/60)}m`;
+    el.innerHTML = `Data source: <b>${connectionStatus.method}</b> | <span class="text-xs text-green-600">✓ ${timeAgo}</span>`;
+  }
+}
+
+async function fetchTCMList() {
+  try {
+    const resp = await fetch(TCM_LIST_CSV + "&_=" + Date.now(), { cache: "no-store" });
+    const text = await resp.text();
+    const { rows } = parseCSVRobust(text);
+    TCM_LIST = rows
+      .filter(r => r[0] && r[1] && r[1].toLowerCase().trim() === "active")
+      .map(r => {
+        const parts = r[0].trim().split(' ');
+        const code = parts[0];
+        const name = parts.slice(1).join(' ');
+        return { code, name, full: r[0].trim() };
+      });
+    console.log(`✅ TCM List loaded: ${TCM_LIST.length} activos`);
+  } catch(e) {
+    console.warn("⚠️ No se pudo cargar lista de TCMs", e);
+  }
+}
+
+function filterTCMList(query) {
+  const dropdown = document.getElementById("tcm_dropdown");
+  document.getElementById("tcm_name").value = "";
+
+  if (!query || query.length < 2) {
+    dropdown.classList.add("hidden");
+    return;
+  }
+
+  const q = query.toLowerCase();
+  const matches = TCM_LIST.filter(t =>
+    t.code.toLowerCase().includes(q) ||
+    t.name.toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  if (matches.length === 0) {
+    dropdown.innerHTML = '<div class="p-2 text-sm text-gray-500">Sin resultados</div>';
+    dropdown.classList.remove("hidden");
+    return;
+  }
+
+  dropdown.innerHTML = matches.map(t => `
+    <div onclick="selectTCM('${t.code}', '${t.name}')"
+         class="p-2 hover:bg-blue-50 cursor-pointer text-sm border-b last:border-0">
+      <span class="font-mono font-bold text-blue-600">${t.code}</span>
+      <span class="text-gray-700 ml-1">${t.name}</span>
+    </div>
+  `).join("");
+
+  dropdown.classList.remove("hidden");
+}
+
+function selectTCM(code, name) {
+  document.getElementById("tcm_search").value = `${code} — ${name}`;
+  document.getElementById("tcm_name").value = `${code} — ${name}`;
+  document.getElementById("tcm_dropdown").classList.add("hidden");
+}
+
+async function fetchCourseData(forceRefresh = false) {
+  if (isFetching && !forceRefresh) return;
+  isFetching = true;
+  updateConnectionStatus('loading');
+  
+  const methods = [
+    { name: 'CSV Export', fn: fetchWithCSV },
+    { name: 'GViz JSON', fn: fetchWithGViz }
+  ];
+  if (DATA_SOURCES.active) {
+    for (const method of methods) {
+      try {
+        const result = await method.fn(DATA_SOURCES.active);
+        LIVE_COURSE_DATA = mapRowsToCourses(result.headers, result.rows);
+        if (LIVE_COURSE_DATA.length === 0) throw new Error("No hay cursos activos");
+        console.log(`✅ Active groups loaded: ${LIVE_COURSE_DATA.length}`);
+        break;
+      } catch (err) {
+        console.warn(`✗ Active ${method.name}:`, err.message);
+      }
+    }
+  } else {
+    LIVE_COURSE_DATA = [];
+  }
+  for (const method of methods) {
+    try {
+      console.log(`\n🔄 Trying to fetch Possible Groups with ${method.name}...`);
+      const result = await method.fn(DATA_SOURCES.possible);
+      LIVE_POSSIBLE_GROUPS = mapRowsToPossibleGroups(result.headers, result.rows);
+      console.log(`✅ Possible groups loaded: ${LIVE_POSSIBLE_GROUPS.length}`);
+      break;
+    } catch (err) {
+      console.warn(`✗ Possible ${method.name}:`, err.message);
+    }
+  }
+  const hasActiveSource = !!DATA_SOURCES.active;
+  if ((hasActiveSource && LIVE_COURSE_DATA.length === 0 && LIVE_POSSIBLE_GROUPS.length === 0) ||
+      (!hasActiveSource && LIVE_POSSIBLE_GROUPS.length === 0)) {
+    connectionStatus = { connected: false, method: null };
+    isFetching = false;
+    updateConnectionStatus('disconnected');
+    throw new Error("Error de conexión");
+  }
+  connectionStatus = { connected: true, method: 'Multi-source' };
+  lastFetchTime = new Date();
+  updateConnectionStatus('connected');
+  updateDataSourceInfo();
+  isFetching = false;
+}
+// ============================================
+// CÁLCULO DE PRIORIDAD (FECHA CERCANA vs PUNTAJE CLUSTER)
+// ============================================
+function calculatePriority(course) {
+  
+  // --- REGLA 1: SI ES GRUPO POSIBLE, USA LA COLUMNA M ---
+  if (course.type === 'possible') {
+      // Retornamos el valor directo del Excel. 
+      // Entre mayor sea el número en Columna M, más arriba saldrá.
+      return course.clusterScore || 0;
+  }
+
+  // --- REGLA 2: SI ES GRUPO ACTIVO, PRIORIZA FECHA MÁS CERCANA ---
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const daysUntilStart = course.startDateObj 
+    ? Math.ceil((course.startDateObj - today) / (1000 * 60 * 60 * 24)) 
+    : 999; 
+
+  if (daysUntilStart < 0) return 0; // Ya pasó
+
+  // Fórmula base: Empezamos en 1000 y restamos los días.
+  // Ejemplo: Empieza mañana (1 día) = 999 pts.
+  // Ejemplo: Empieza en 20 días = 980 pts.
+  let score = 1000 - daysUntilStart;
+
+  // AJUSTE TÉCNICO: Penalización por Overbooking
+  // Aunque priorizamos fecha, si el grupo está LLENO, le quitamos 500 puntos.
+  // ¿Por qué? Para que si tienes un grupo mañana (Lleno) y uno pasado mañana (Libre),
+  // el sistema te muestre el Libre primero.
+  const isPremium = course.format === 'premium' || 
+                  (course.internalCode + (course.name_es || "")).toUpperCase().includes("PRM");
+if (course.isFull) {
+    score -= 500;
+}
+
+  // Aseguramos que no de negativo
+  if (score < 0) score = 0;
+
+  return score;
+}
+
+
+function calculateScheduleMatchScore(course) {
+  if (preferredSchedule.length === 0) return 0;
+  
+  let bestScore = 0;
+  const courseTimeMinutes = course.timeMinutes; 
+  const courseDay = course.day ? course.day.toLowerCase() : null;
+  
+  if (!courseTimeMinutes) return 0;
+  
+  for (const pref of preferredSchedule) {
+    const colTime = convertClientToColombia(pref.day, pref.hour);
+    const prefTimeMinutes = colTime.hour * 60;
+    const prefDay = colTime.day;
+    
+    const timeDiff = Math.abs(courseTimeMinutes - prefTimeMinutes);
+    let currentScore = 0;
+
+    // Calcular coincidencia pura
+    if (courseDay === prefDay && timeDiff <= 30) {
+      currentScore = 1000 - timeDiff; 
+    } else if (timeDiff <= 30) {
+      currentScore = 800 - timeDiff;  
+    } else if (courseDay === prefDay && timeDiff <= 120) {
+      currentScore = 600 - timeDiff;  
+    }
+
+    // --- CORRECCIÓN DRÁSTICA ---
+    // Si está lleno, ignoramos el puntaje alto y lo bajamos al piso.
+    // Le damos 100 puntos fijos para que aparezca en la lista (mejor que 0),
+    // pero NUNCA le ganará a un grupo disponible con coincidencia (que tendrá 600+).
+    if (course.isFull && currentScore > 0) {
+        currentScore = 100; 
+    }
+
+    bestScore = Math.max(bestScore, currentScore);
+  }
+  
+  return bestScore;
+}
+
+
+// ============================================
+// DIAGNÓSTICO Y MATCHING (CON MONITOR DE LOGICA)
+// ============================================
+async function diagnoseAndMatch() {
+  ['amo_crm_link', 'student_age', 'course_type'].forEach(id => {
+    document.getElementById(id).classList.remove('field-error');
+  });
+  const amoCrmLink = document.getElementById("amo_crm_link").value.trim();
+  const ageVal = parseInt(document.getElementById("student_age").value, 10);
+  const courseTypeVal = document.getElementById("course_type").value;
+  const amoRegex = /^https:\/\/kodland\.amocrm\.ru\/leads\/detail\/\d+/;
+  const validationErrors = [];
+  if (!courseTypeVal) {
+    validationErrors.push("Selecciona un curso.");
+    document.getElementById("course_type").classList.add('field-error');
+  }
+  if (!ageVal || ageVal < 7 || ageVal > 17) {
+    validationErrors.push("La edad debe estar entre 7 y 17 años.");
+    document.getElementById("student_age").classList.add('field-error');
+  }
+  if (!amoCrmLink) {
+    validationErrors.push("El AMO Link es obligatorio.");
+    document.getElementById("amo_crm_link").classList.add('field-error');
+  } else if (!amoRegex.test(amoCrmLink)) {
+    validationErrors.push("AMO Link inválido. Formato esperado: https://kodland.amocrm.ru/leads/detail/12345");
+    document.getElementById("amo_crm_link").classList.add('field-error');
+  }
+  if (validationErrors.length > 0) {
+    showSystemMessage('error', '⚠️ Campos incompletos', validationErrors.join(' · '));
+    return;
+  }
+
+  const activeDiv = document.getElementById("course_recommendation");
+  const possibleDiv = document.getElementById("possible_groups_list");
+
+  activeDiv.innerHTML = '<span class="text-blue-600"><i class="fas fa-spinner fa-spin"></i> Cargando grupos activos...</span>';
+  possibleDiv.innerHTML = '<span class="text-blue-600"><i class="fas fa-spinner fa-spin"></i> Cargando grupos posibles...</span>';
+
+  try {
+    await fetchCourseData(false); // No forzamos recarga para ser más rápidos
+  } catch {
+    activeDiv.innerHTML = '<span class="text-red-600">Error de conexión</span>';
+    possibleDiv.innerHTML = '<span class="text-red-600">Error de conexión</span>';
+    return;
+  }
+
+  const age = parseInt(document.getElementById("student_age").value, 10);
+  const courseType = document.getElementById("course_type").value;
+  const groupType = document.getElementById("group_type").value;
+
+  // 1. FILTRADO INICIAL
+  const selectedId = parseInt(courseType);
+  const allowedIds = selectedId ? [selectedId] : [];
+
+  // Filtrar Activos
+  let filteredActive = LIVE_COURSE_DATA.filter(c => {
+    if (allowedIds.length > 0 && !allowedIds.includes(c.courseId)) return false;
+    if (age < c.min_age || age > c.max_age) return false;
+    const isPremium = (c.internalCode + c.name_es).toUpperCase().includes("PRM");
+    if (groupType === "premium" && !isPremium) return false;
+    if (groupType === "regular" && isPremium) return false;
+    return true;
+  });
+
+  // Filtrar Posibles
+  let filteredPossible = LIVE_POSSIBLE_GROUPS.filter(c => {
+    if (allowedIds.length > 0 && !allowedIds.includes(c.courseId)) return false;
+    if (age < c.min_age || age > c.max_age) return false;
+    if (groupType !== c.format) return false;
+    return true;
+  });
+
+  // 2. CÁLCULO DE PUNTAJES (SCORING)
+  filteredActive.forEach(c => {
+    c.priority = calculatePriority(c);            // Lógica de negocio (Llenar vacíos)
+    c.scheduleScore = calculateScheduleMatchScore(c); // Preferencia de cliente
+  });
+  
+  filteredPossible.forEach(c => {
+    c.priority = calculatePriority(c);
+    c.scheduleScore = calculateScheduleMatchScore(c);
+  });
+
+  // 3. ORDENAMIENTO (SORTING)
+  const sortFunction = (a, b) => {
+    // Si el cliente eligió horario, manda el Schedule Score
+    if (preferredSchedule.length > 0) {
+        if (b.scheduleScore !== a.scheduleScore) return b.scheduleScore - a.scheduleScore;
+    }
+    // Si no (o si empatan), manda la Prioridad de Negocio
+    return b.priority - a.priority;
+  };
+
+  filteredActive.sort(sortFunction);
+  filteredPossible.sort(sortFunction);
+
+  // ============================================================
+  // 🕵️‍♂️ MONITOR DE LÓGICA (AQUÍ ESTÁ LO QUE PEDISTE)
+  // ============================================================
+  console.group("📊 MONITOR DE PRIORIZACIÓN - TOP 10 ACTIVOS");
+  console.log(`Criterio de Orden: ${preferredSchedule.length > 0 ? "HORARIO DEL CLIENTE (ScheduleScore)" : "URGENCIA DE NEGOCIO (PriorityScore)"}`);
+  
+  const debugData = filteredActive.slice(0, 10).map((c, i) => {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const days = c.startDateObj ? Math.ceil((c.startDateObj - today)/(1000*60*60*24)) : 999;
+      
+      let estado = "Normal";
+      if (c.isFull) estado = "⛔ LLENO (Castigado)";
+      else if (days <= 5 && (c.enrolled/c.capacity) < 0.5) estado = "🔥 URGENTE (Rescate)";
+      else if (days > 30) estado = "📉 LEJANO";
+
+      return {
+          "#": i + 1,
+          "ID": c.internalCode,
+          "Fecha Inicio": c.next_start.split("|")[0].trim(), // Solo la fecha
+          "Días Falta": days,
+          "Ocupación": `${c.enrolled}/${c.capacity} (${Math.round((c.enrolled/c.capacity)*100)}%)`,
+          "ESTADO": estado,
+          "Pts Negocio": Math.round(c.priority),
+          "Pts Horario": Math.round(c.scheduleScore),
+          "SCORE FINAL": preferredSchedule.length > 0 ? Math.round(c.scheduleScore) : Math.round(c.priority)
+      };
+  });
+  
+  if(debugData.length > 0) {
+      console.table(debugData);
+      console.log("👆 Si ves 'LLENO' arriba de 'URGENTE' o 'Normal', hay un error en la lógica.");
+  } else {
+      console.log("⚠️ No hay grupos activos que cumplan los filtros básicos (Edad/Tipo/Curso)");
+  }
+  console.groupEnd();
+  // ============================================================
+
+  allFilteredCourses = filteredActive;
+  allFilteredPossibleGroups = filteredPossible;
+  selectedCourses = [];
+
+  // 4. RENDERIZADO
+  if (filteredActive.length === 0) {
+    activeDiv.innerHTML = '<span class="text-gray-600">No hay grupos activos para estos criterios</span>';
+  } else {
+    const top3Active = filteredActive.slice(0, 3);
+    let html = renderCourseList(top3Active, true);
+    if (filteredActive.length > 3) {
+      html += `<div class="mt-4 text-center"><button onclick="openCoursesModal()" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700">📋 Ver todos los ${filteredActive.length} grupos activos</button></div>`;
+    }
+    activeDiv.innerHTML = html;
+  }
+
+  if (filteredPossible.length === 0) {
+    possibleDiv.innerHTML = '<span class="text-gray-600">No hay grupos posibles para estos criterios</span>';
+  } else {
+    const top3Possible = filteredPossible.slice(0, 3);
+    let html = renderCourseList(top3Possible, false);
+    if (filteredPossible.length > 3) {
+      html += `<div class="mt-4 text-center"><button onclick="openPossibleGroupsModal()" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700">📋 Ver todos los ${filteredPossible.length} grupos posibles</button></div>`;
+    }
+    possibleDiv.innerHTML = html;
+  }
+
+  if (preferredSchedule.length > 0) {
+    const hasMatches = filteredActive.some(c => c.scheduleScore > 0) || filteredPossible.some(c => c.scheduleScore > 0);
+    if (hasMatches) showSystemMessage('success', '✅ Coincidencias encontradas', 'Resultados filtrados por disponibilidad horaria.');
+    else showSystemMessage('warning', '⚠️ Sin coincidencias exactas', 'Mostrando los grupos más cercanos.');
+  }
+
+  updatePitchDropdown();
+  updateSaleSummary();
+}
+
+
+// ============================================
+// RENDERIZADO (CON ETIQUETAS DE MATCH DETALLADAS)
+// ============================================
+function renderCourseList(courses, showIndex = true) {
+  let html = "";
+  
+  const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+  courses.forEach((course, idx) => {
+    const remaining = course.capacity - course.enrolled;
+    const isPremium = course.format === 'premium' || 
+                  (course.internalCode + (course.name_es || "")).toUpperCase().includes("PRM");
+    const critical = isPremium ? remaining === 1 : (remaining <= 2 && remaining > 0);
+    const almostFull = isPremium ? false : (remaining > 2 && remaining <= 5);
+    const isSelected = selectedCourses.some(c => c.id === course.id);
+    
+    // Clases base
+    let cardClass = "course-option";
+    if (course.type === 'possible') cardClass += " possible-group";
+    else if (course.isFull) cardClass += " critical";
+    else if (critical) cardClass += " critical";
+    else if (almostFull) cardClass += " almost-full";
+    if (isSelected) cardClass += " selected";
+    
+    // Títulos
+    let mainTitle = course.name_es;
+    let subTitle = "";
+    if (course.type === 'active' && course.internalCode) {
+        mainTitle = course.internalCode; 
+        subTitle = course.name_es;       
+    }
+
+    const displayIdx = showIndex ? `OPCIÓN ${idx + 1}` : `#${idx + 1}`;
+    const badge = course.type === 'possible' 
+      ? '<span class="course-option-badge badge-possible">GRUPO POSIBLE</span>'
+      : '<span class="course-option-badge badge-active">GRUPO ACTIVO</span>';
+
+    // 1. CÁLCULO DE HORA VISUAL
+    let displayTime = "";
+    let colTimeLabel = course.timeStr || course.hora || "??:??";
+    const hasValidTime = colTimeLabel.includes(":"); 
+
+    if (course.startDateObj && hasValidTime && course.timeStr) {
+       const clientOffset = parseInt(document.getElementById("client_timezone").value);
+       const diff = clientOffset - COLOMBIA_OFFSET;
+       const clientDate = new Date(course.startDateObj);
+       const [h, m] = course.timeStr.split(':');
+       clientDate.setHours(parseInt(h), parseInt(m));
+       clientDate.setHours(clientDate.getHours() + diff);
+       
+       const dName = dayNames[clientDate.getDay()];
+       const dNum = clientDate.getDate();
+       const mName = monthNames[clientDate.getMonth()];
+       const finalH = clientDate.getHours().toString().padStart(2, '0');
+       const finalM = clientDate.getMinutes().toString().padStart(2, '0');
+       const finalDateStr = `${dName} ${dNum} ${mName}, ${finalH}:${finalM}`;
+       
+       displayTime = `<b>${finalDateStr}</b> <span class="text-xs text-blue-600">(Tu hora)</span> <span class="text-gray-400 text-xs">| ${colTimeLabel} COL</span>`;
+    
+    } else if (course.day && course.hora && hasValidTime) {
+       const days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+       const targetDayIdx = days.indexOf(course.day.toLowerCase());
+       const tempDate = new Date();
+       if (targetDayIdx !== -1) {
+           const currentDayIdx = tempDate.getDay();
+           const distance = targetDayIdx - currentDayIdx;
+           tempDate.setDate(tempDate.getDate() + distance);
+       }
+       const [h, m] = course.hora.split(':');
+       tempDate.setHours(h, m, 0); 
+       const clientTimeFull = convertColombiaToClient(tempDate); 
+       displayTime = `<b>${clientTimeFull}</b> <span class="text-xs text-blue-600">(Tu hora)</span> <span class="text-gray-400 text-xs">| ${colTimeLabel} COL</span>`;
+    } else {
+       const safeDate = course.next_start || "Fecha Pendiente";
+       displayTime = `${safeDate} <span class="text-gray-400 text-xs">| ${colTimeLabel} COL</span>`;
+    }
+
+    // 2. CONSTRUCCIÓN DE LA TARJETA
+    html += `<div class="${cardClass}" id="course-card-${course.id}">
+      <div class="course-option-title text-lg">${displayIdx}: ${mainTitle} ${badge}</div>
+      ${subTitle ? `<div class="text-xs text-gray-500 mb-2 font-mono border-b pb-1 truncate" title="${subTitle}">${subTitle}</div>` : ""}
+      
+      <div class="course-option-row">📅 ${displayTime}</div>
+      <div class="course-option-row ${critical || course.isFull ? "text-orange-600 font-semibold" : ""}">💻 ${course.enrolled}/${course.capacity} (${remaining} restantes)</div>
+      <div class="course-option-row">👨‍🏫 ${course.teacher}</div>`;
+    
+    // 3. LOGICA DE MENSAJES DE COINCIDENCIA (AQUÍ ESTÁ EL CAMBIO)
+    if (preferredSchedule.length > 0) {
+      // Recalculamos la "razón" del match para mostrar el texto correcto
+      // (Porque el score numérico ya está 'sucio' por la penalización de lleno)
+      
+      let matchLabel = "";
+      let matchIcon = "";
+      let isExact = false;
+      
+      // Buscamos cuál fue la mejor coincidencia que generó este curso
+      for (const pref of preferredSchedule) {
+         const colTime = convertClientToColombia(pref.day, pref.hour);
+         const prefTimeMinutes = colTime.hour * 60;
+         const courseTimeMinutes = course.timeMinutes;
+         const prefDay = colTime.day;
+         const courseDay = course.day ? course.day.toLowerCase() : "";
+         
+         const timeDiff = Math.abs(courseTimeMinutes - prefTimeMinutes);
+
+         if (courseDay === prefDay && timeDiff <= 30) {
+             matchLabel = "🎯 Coincidencia EXACTA";
+             matchIcon = "🎯";
+             isExact = true;
+             break; // Encontramos la mejor, salimos
+         } else if (timeDiff <= 30 && !isExact) {
+             matchLabel = "⏰ Misma hora, diferente día";
+             matchIcon = "⏰";
+         } else if (courseDay === prefDay && timeDiff <= 120 && !isExact && matchLabel !== "⏰ Misma hora, diferente día") {
+             matchLabel = "🗓️ Mismo día, diferente hora";
+             matchIcon = "🗓️";
+         }
+      }
+
+      // Renderizamos la etiqueta si hubo algún match
+      if (matchLabel) {
+        let colorClass = "text-green-700 bg-green-50 border border-green-200";
+        let extraText = "";
+
+        // Si está lleno, cambiamos el color y agregamos advertencia
+        if (course.isFull) {
+            colorClass = "text-orange-700 bg-orange-50 border border-orange-200";
+            extraText = " (Pero grupo lleno ⚠️)";
+        }
+        
+        html += `<div class="course-option-row mt-2 p-1 rounded text-center text-sm font-bold ${colorClass}">
+            ${matchLabel}${extraText}
+        </div>`;
+      }
+    }
+    
+    // Alertas de cupo
+if (course.isFull) {
+  html += '<div class="course-option-urgency critical-text">⚠️ GRUPO LLENO - REQUIERE AUTORIZACIÓN</div>';
+} else if (remaining === 1) {
+  html += '<div class="course-option-urgency critical-text">🚨 ¡ÚLTIMO CUPO DISPONIBLE! 🚨</div>';
+} else if (!isPremium && remaining === 2) {
+  html += '<div class="course-option-urgency critical-text">🚨 URGENTE - 2 cupos 🚨</div>';
+} else if (!isPremium && remaining === 3) {
+  html += '<div class="course-option-urgency warning-text">⚠️ Casi lleno - 3 cupos</div>';
+} else if (!isPremium && almostFull) {
+  html += `<div class="course-option-urgency warning-text">⚠️ Casi lleno - ${remaining} cupos</div>`;
+}
+    
+    html += `<button onclick="toggleCourseSelection('${course.id}')" class="btn-select mt-3 w-full ${isSelected ? "selected" : "unselected"}" id="btn-select-${course.id}">${isSelected ? "✓ Seleccionado" : "Seleccionar"}</button>
+    </div>`;
+  });
+  return html;
+}
+
+
+function toggleCourseSelection(courseId) {
+  const course = [...allFilteredCourses, ...allFilteredPossibleGroups].find(c => c.id === courseId);
+  if (!course) return;
+  const isSelected = selectedCourses.some(c => c.id === courseId);
+  if (isSelected) {
+    selectedCourses = [];
+  } else {
+    selectedCourses = [course];
+  }
+  updateSelectionUI();
+  updatePitchDropdown();
+  updateSaleSummary();
+}
+
+function updateSelectionUI() {
+  [...allFilteredCourses, ...allFilteredPossibleGroups].forEach(course => {
+    const btn = document.getElementById(`btn-select-${course.id}`);
+    const card = document.getElementById(`course-card-${course.id}`);
+    const isSelected = selectedCourses.some(c => c.id === course.id);
+    if (btn) {
+      btn.className = `btn-select mt-3 w-full ${isSelected ? "selected" : "unselected"}`;
+      btn.textContent = isSelected ? "✓ Seleccionado" : "Seleccionar";
+    }
+    if (card) {
+      isSelected ? card.classList.add("selected") : card.classList.remove("selected");
+    }
+  });
+  const countEl = document.getElementById("selected-count");
+  if (countEl) countEl.textContent = selectedCourses.length === 1 ? "1 grupo seleccionado" : "Ningún grupo seleccionado";
+}
+
+function updatePitchDropdown() {
+  const submitBtn = document.getElementById("btn_submit_sale");
+  if (submitBtn) {
+    submitBtn.disabled = selectedCourses.length === 0;
+  }
+}
+
+function updateSaleSummary() {
+  const summaryContent = document.getElementById("summary-content");
+  const amoCrm = document.getElementById("amo_crm_link").value.trim();
+  const age = document.getElementById("student_age").value;
+    const groupType = document.getElementById("group_type").value;
+  const isSen = document.getElementById("is_sen").checked;
+  
+  if (selectedCourses.length === 0) {
+    summaryContent.innerHTML = '<p class="text-gray-500">Selecciona un grupo para ver el resumen.</p>';
+    return;
+  }
+  
+  let html = '<div class="space-y-2">';
+  if (amoCrm) html += `<div><strong>AMO Link:</strong> <a href="${amoCrm}" target="_blank" class="text-blue-600 hover:underline">Ver lead</a></div>`;
+  html += `<div><strong>Edad:</strong> ${age} años</div>`;
+  
+  // --- NUEVO: MOSTRAR CLUSTER ID SI EXISTE ---
+  // Buscamos si hay algún grupo posible seleccionado con ID
+  const possibleGroup = selectedCourses.find(c => c.type === 'possible' && c.semanticId);
+  if (possibleGroup) {
+      html += `<div class="bg-yellow-100 p-2 rounded border border-yellow-300 text-yellow-800">
+        <strong>🆔 Cluster ID:</strong> <span class="font-mono text-lg font-bold">${possibleGroup.semanticId}</span>
+        <div class="text-xs mt-1 text-gray-600">(Se copia al portapapeles al guardar)</div>
+      </div>`;
+  }
+  // -------------------------------------------
+
+  const scheduleParts = [];
+  if (preferredSchedule.length > 0) scheduleParts.push(`${preferredSchedule.length} horarios`);
+  selectedCourses.filter(c => c.type === 'possible' && c.next_start).forEach(c => {
+    scheduleParts.push(`Grupo posible: ${c.next_start}`);
+  });
+  if (scheduleParts.length > 0) {
+    html += `<div><strong>Disponibilidad:</strong> ${scheduleParts.join(' | ')}</div>`;
+  }
+  
+  html += `<div class="mt-2 border-t pt-2"><strong>Selección:</strong></div>`;
+  selectedCourses.forEach((c, idx) => {
+    const typeLabel = c.type === 'possible' ? ' [Posible]' : ' [Activo]';
+    html += `<div class="text-sm pl-2">• ${c.name_es}${typeLabel}</div>`;
+  });
+  html += '</div>';
+  summaryContent.innerHTML = html;
+}
+
+
+function openCoursesModal() {
+  const modal = document.getElementById("courses-modal");
+  const overlay = document.getElementById("modal-overlay");
+  const modalBody = document.getElementById("modal-courses-list");
+  modalBody.innerHTML = renderCourseList(allFilteredCourses, false);
+  modal.classList.add("active");
+  overlay.classList.add("active");
+  updateSelectionUI();
+}
+
+function closeCoursesModal() {
+  document.getElementById("courses-modal").classList.remove("active");
+  document.getElementById("modal-overlay").classList.remove("active");
+}
+
+function openPossibleGroupsModal() {
+  const modal = document.getElementById("possible-groups-modal");
+  const overlay = document.getElementById("possible-modal-overlay");
+  const modalBody = document.getElementById("modal-possible-groups-list");
+  modalBody.innerHTML = renderCourseList(allFilteredPossibleGroups, false);
+  modal.classList.add("active");
+  overlay.classList.add("active");
+  updateSelectionUI();
+}
+
+function closePossibleGroupsModal() {
+  document.getElementById("possible-groups-modal").classList.remove("active");
+  document.getElementById("possible-modal-overlay").classList.remove("active");
+}
+
+function openPreferredScheduleModal() {
+  const modal = document.getElementById("schedule-modal");
+  const overlay = document.getElementById("schedule-modal-overlay");
+
+  // Clonar tbody para limpiar listeners acumulados entre aperturas
+  const oldTbody = document.getElementById("schedule-table-body");
+  const tbody = oldTbody.cloneNode(false);
+  oldTbody.parentNode.replaceChild(tbody, oldTbody);
+
+  const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  let html = "";
+  for (let hour = 6; hour <= 22; hour++) {
+    const timeStr = `${hour.toString().padStart(2, '0')}:00`;
+    html += `<tr><td class="border p-2 font-medium">${timeStr}</td>`;
+    days.forEach(day => {
+      const checkId = `schedule-${day}-${hour}`;
+      const isChecked = preferredSchedule.some(p => p.day === day && p.hour === hour);
+      html += `<td class="border p-1 text-center schedule-cell${isChecked ? ' checked' : ''}" data-day="${day}" data-hour="${hour}">` +
+              `<input type="checkbox" id="${checkId}" class="schedule-checkbox w-4 h-4" style="pointer-events:none;" data-day="${day}" data-hour="${hour}" ${isChecked ? 'checked' : ''}/></td>`;
+    });
+    html += "</tr>";
+  }
+  tbody.innerHTML = html;
+
+  tbody.addEventListener('mousedown', e => {
+    const td = e.target.closest('.schedule-cell');
+    if (!td) return;
+    isDragging = true;
+    const cb = td.querySelector('.schedule-checkbox');
+    dragCheckValue = !cb.checked;
+    cb.checked = dragCheckValue;
+    td.classList.toggle('checked', dragCheckValue);
+    e.preventDefault();
+  });
+  tbody.addEventListener('mouseover', e => {
+    if (!isDragging) return;
+    const td = e.target.closest('.schedule-cell');
+    if (!td) return;
+    const cb = td.querySelector('.schedule-checkbox');
+    cb.checked = dragCheckValue;
+    td.classList.toggle('checked', dragCheckValue);
+  });
+
+  modal.classList.add("active");
+  overlay.classList.add("active");
+}
+
+function closeScheduleModal() {
+  document.getElementById("schedule-modal").classList.remove("active");
+  document.getElementById("schedule-modal-overlay").classList.remove("active");
+}
+
+// ============================================
+// GUARDAR HORARIOS PREFERIDOS (CON RESUMEN VISUAL)
+// ============================================
+function submitPreferredSchedule() {
+  const checkboxes = document.querySelectorAll('.schedule-checkbox:checked');
+  if (checkboxes.length === 0) {
+    alert("⚠️ Selecciona al menos un horario preferido");
+    return;
+  }
+  
+  preferredSchedule = [];
+  // Mapa para traducir códigos a nombres cortos
+  const dayMap = {'mon': 'Lun', 'tue': 'Mar', 'wed': 'Mié', 'thu': 'Jue', 'fri': 'Vie', 'sat': 'Sáb', 'sun': 'Dom'};
+  let summaryParts = [];
+
+  checkboxes.forEach(cb => {
+    const d = cb.dataset.day;
+    const h = cb.dataset.hour;
+    preferredSchedule.push({ day: d, hour: parseInt(h) });
+    
+    // Construimos el texto: "Lun 17:00"
+    summaryParts.push(`${dayMap[d] || d} ${h}:00`);
+  });
+  
+  const btn = document.getElementById("btn_select_schedule");
+  btn.classList.add("selected");
+  btn.innerHTML = `✅ ${checkboxes.length} horarios marcados`;
+  
+  // AQUÍ ESTÁ EL CAMBIO VISUAL
+  const summary = document.getElementById("schedule-summary");
+  summary.classList.remove("hidden");
+  summary.className = "mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800";
+  summary.innerHTML = `
+    <div class="font-bold mb-1"><i class="fas fa-clock"></i> Horarios seleccionados:</div>
+    <div class="text-gray-700">${summaryParts.join(", ")}</div>
+    <div class="text-xs text-gray-500 mt-1 italic">El sistema buscará coincidencias basadas en estos horarios.</div>
+  `;
+  
+  showSystemMessage('success', '✅ Horarios guardados', 'Presiona "Sugerir Grupos" para ver los resultados.');
+  closeScheduleModal();
+}
+
+async function submitSale() {
+  const tcmName = document.getElementById("tcm_name").value.trim();
+  const errors = [];
+  if (selectedCourses.length === 0) errors.push("Selecciona un grupo antes de guardar.");
+  if (!tcmName) errors.push("Selecciona tu nombre de la lista.");
+  if (errors.length > 0) {
+    showSystemMessage('error', '⚠️ Campos incompletos', errors.join(' · '));
+    return;
+  }
+
+  // 2. Preparar datos
+  const dayMapES = {'mon':'Lun','tue':'Mar','wed':'Mié','thu':'Jue','fri':'Vie','sat':'Sáb','sun':'Dom'};
+  const dayMapEN = {'mon':'Mon','tue':'Tue','wed':'Wed','thu':'Thu','fri':'Fri','sat':'Sat','sun':'Sun'};
+  const dayMap = currentRegion === 'latam' ? dayMapES : dayMapEN;
+  const scheduleText = preferredSchedule.length > 0
+    ? preferredSchedule.map(s => `${dayMap[s.day] || s.day} ${s.hour}:00`).join(", ")
+    : "";
+
+  const esToEnFull = {
+    'lunes':'Monday','martes':'Tuesday','miércoles':'Wednesday',
+    'jueves':'Thursday','viernes':'Friday','sábado':'Saturday','domingo':'Sunday'
+  };
+  const localizeNextStart = s => currentRegion === 'latam'
+    ? s
+    : (s || "").replace(/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo)/i,
+        m => esToEnFull[m.toLowerCase()] || m);
+
+  const saleData = {
+    timestamp: new Date().toISOString(),
+    region: currentRegion,
+    amo_crm_link: document.getElementById("amo_crm_link").value.trim(),
+    tcm_name: tcmName,
+    student_age: document.getElementById("student_age").value,
+    course_type: document.getElementById("course_type").selectedOptions[0]?.text || document.getElementById("course_type").value,
+    group_type: document.getElementById("group_type").value,
+    is_sen: document.getElementById("is_sen").checked,
+    preferred_schedule_text: scheduleText, 
+    selected_courses: selectedCourses.map(c => {
+        let finalName = c.name_es;
+        if (c.type === 'active' && c.internalCode) finalName = `${c.internalCode} - ${c.name_es}`;
+        return {
+          id: c.id,
+          name: finalName,
+          type: c.type,
+          schedule: localizeNextStart(c.next_start),
+          teacher: c.teacher,
+          semantic_id: c.semanticId || "" // Enviamos ID al sheet también
+        };
+    })
+  };
+  
+  // 2. Interfaz de carga
+  const btn = document.getElementById("btn_submit_sale");
+  const originalText = btn.innerHTML; // Guardamos el HTML original (icono + texto)
+  btn.disabled = true;
+  btn.innerText = "⏳ Guardando...";
+
+  try {
+    // 3. Enviar a Google Sheets
+    await fetch(REGION_CONFIG[currentRegion].salesScriptUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(saleData)
+    });
+    
+    // 4. LÓGICA DE COPIADO AL PORTAPAPELES (NUEVO)
+    const possibleGroup = selectedCourses.find(c => c.type === 'possible' && c.semanticId);
+    let copyMessage = "";
+    
+    if (possibleGroup) {
+        // Texto exacto solicitado: "Selector Tool - Cluster [ID]"
+        const textToCopy = `Selector Tool - Cluster ${possibleGroup.semanticId}`;
+        
+        // Usamos la API del portapapeles
+        await navigator.clipboard.writeText(textToCopy);
+        copyMessage = `\n\n📋 COPIADO AL PORTAPAPELES:\n"${textToCopy}"`;
+    }
+
+    // 5. Feedback Final
+    showSystemMessage('success', '✅ Registro guardado', copyMessage ? 'Solicitud registrada. Cluster ID copiado al portapapeles.' : 'La solicitud se registró correctamente.');
+    
+    // Alerta visual para confirmar el copiado antes de recargar
+    if (copyMessage) {
+        alert("✅ ¡Registro Guardado!\n" + copyMessage + "\n\nYa puedes pegarlo en el Formulario de Pago.");
+    }
+    
+    // Recargar
+    setTimeout(() => { location.reload(); }, 2000); // Un poco menos de tiempo para agilidad
+    
+  } catch (error) {
+    console.error("❌ Error:", error);
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+    showSystemMessage('error', '❌ Error', 'No se pudo guardar. Intenta de nuevo.');
+  }
+}
+
+// ============================================
+// LÓGICA DE ZONA HORARIA
+// ============================================
+
+// Offset de Colombia (UTC-5)
+const COLOMBIA_OFFSET = -5; 
+
+function populateTimezones() {
+  const select = document.getElementById("client_timezone");
+  let html = "";
+  
+  // Generar de UTC-12 a UTC+14
+  for (let i = -12; i <= 14; i++) {
+    const sign = i >= 0 ? "+" : "";
+    const label = `UTC${sign}${i}:00`;
+    // Seleccionar Colombia/Perú/EST (UTC-5) por defecto
+    const isSelected = i === -5 ? "selected" : "";
+    
+    // Agregamos algunas referencias comunes para ayudar al TCM (opcional, pero recomendado)
+    let ref = "";
+if (i === -5) ref = " (Colombia/Perú)";
+else if (i === -6) ref = " (México CDMX)";
+else if (i === 2) ref = " (España)";
+else if (i === -3) ref = " (Argentina)";
+else if (i === -4) ref = " (Chile)";
+    
+    html += `<option value="${i}" ${isSelected}>${label}${ref}</option>`;
+  }
+  select.innerHTML = html;
+}
+
+// Convierte (Día/Hora Cliente) -> (Día/Hora Colombia) para BUSCAR en la base de datos
+function convertClientToColombia(dayStr, hourInt) {
+  const clientOffset = parseInt(document.getElementById("client_timezone").value);
+  const diff = COLOMBIA_OFFSET - clientOffset; // Ej: España (+1). Diff = -5 - 1 = -6 horas.
+  
+  // Días numéricos para manejar cambios de día (0=Dom, 1=Lun...)
+  const days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+  
+  // Normalizar día de entrada
+  let dayIndex = days.indexOf(parseDayAbbreviation(dayStr));
+  if (dayIndex === -1) return { day: dayStr, hour: hourInt }; // Fallback
+
+  let newHour = hourInt + diff;
+  let newDayIndex = dayIndex;
+
+  // Ajuste de cambio de día
+  if (newHour < 0) {
+    newHour += 24;
+    newDayIndex = dayIndex - 1;
+    if (newDayIndex < 0) newDayIndex = 6;
+  } else if (newHour >= 24) {
+    newHour -= 24;
+    newDayIndex = dayIndex + 1;
+    if (newDayIndex > 6) newDayIndex = 0;
+  }
+
+  return { day: days[newDayIndex], hour: newHour };
+}
+
+// Convierte (Hora Colombia) -> (Hora Cliente) para MOSTRAR en la tarjeta
+function convertColombiaToClient(colDateObj) {
+  if (!colDateObj) return "N/A";
+  
+  const clientOffset = parseInt(document.getElementById("client_timezone").value);
+  const diff = clientOffset - COLOMBIA_OFFSET; // Ej: España (+1). Diff = 1 - (-5) = +6 horas.
+  
+  // Clonamos la fecha para no modificar la original
+  const clientDate = new Date(colDateObj);
+  clientDate.setHours(clientDate.getHours() + diff);
+  
+  const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const dayName = days[clientDate.getDay()];
+  
+  const h = clientDate.getHours().toString().padStart(2, '0');
+  const m = clientDate.getMinutes().toString().padStart(2, '0');
+  
+  return `${dayName} ${h}:${m}`;
+}
+
+function updateTimezoneDisplay() {
+  // Cuando cambia la zona horaria, refrescamos los cálculos si hay resultados
+  if (allFilteredCourses.length > 0 || allFilteredPossibleGroups.length > 0) {
+    diagnoseAndMatch(); 
+  }
+}
+
+// ============================================
+// FUNCIÓN PARA FORMATEAR HORA (HH:MM:SS -> HH:MM)
+// ============================================
+function formatTimeHHMM(timeStr) {
+  if (!timeStr) return "";
+  // Busca patrones como 17:00 o 17:00:00
+  const match = String(timeStr).match(/(\d{1,2}):(\d{2})/);
+  if (match) {
+    return `${match[1].padStart(2, '0')}:${match[2].padStart(2, '0')}`;
+  }
+  return ""; 
+}
+
+window.onload = () => {
+  document.addEventListener('mouseup', () => { isDragging = false; });
+  populateTimezones();
+  document.getElementById("student_age").value = 10;
+  setInterval(() => { if (lastFetchTime) updateDataSourceInfo(); }, 30000);
+};
+</script>
+</body>
+</html>
