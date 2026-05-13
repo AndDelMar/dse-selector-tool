@@ -514,7 +514,7 @@ const REGION_CONFIG = {
       csv: `https://docs.google.com/spreadsheets/d/e/${POSSIBLE_GROUPS_SHEET_ID}/pub?gid=${POSSIBLE_GROUPS_GID}&single=true&output=csv`,
       json: `https://docs.google.com/spreadsheets/d/e/${POSSIBLE_GROUPS_SHEET_ID}/gviz/tq?tqx=out:json&gid=${POSSIBLE_GROUPS_GID}`
     },
-    tcmCsv: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRmilalgl45zdxkUNF1V5xe4jivECd6BGyqg4vTV5ZJ0S3zzi0IjSgstlZXjTGjJenxEU93tjDb4RxI/pub?gid=208053934&single=true&output=csv",
+    tcmCsv: `https://docs.google.com/spreadsheets/d/${CENTRAL_SHEET_ID}/export?format=csv&gid=1478651946`,
     courseListCsv: `https://docs.google.com/spreadsheets/d/${CENTRAL_SHEET_ID}/export?format=csv&gid=0`,
     salesScriptUrl: "https://script.google.com/macros/s/AKfycbxkhc55bmSOhSDHTQhrLuq4cqC2xJ1oJO5a-xythsjrgMo-KBPACj0zCiDnpHxm_vR0Lg/exec"
   },
@@ -1399,15 +1399,32 @@ async function fetchTCMList() {
     const resp = await fetch(TCM_LIST_CSV + "&_=" + Date.now(), { cache: "no-store" });
     const text = await resp.text();
     const { rows } = parseCSVRobust(text);
-    TCM_LIST = rows
-      .filter(r => r[0] && r[1] && r[1].toLowerCase().trim() === "active")
-      .map(r => {
-        const parts = r[0].trim().split(' ');
-        const code = parts[0];
-        const name = parts.slice(1).join(' ');
-        return { code, name, full: r[0].trim() };
-      });
+    console.group(`🔍 TCM parsing — ${rows.length} filas totales`);
+    const discarded = [];
+    TCM_LIST = [];
+    rows.forEach((r, i) => {
+      const col0 = (r[0] || "").trim();
+      const col1 = (r[1] || "").trim();
+      const status = col1.toLowerCase();
+      if (!col0 && !col1) {
+        discarded.push({ fila: i + 2, motivo: 'fila vacía', col0, col1 });
+      } else if (!col0) {
+        discarded.push({ fila: i + 2, motivo: 'sin nombre/código (col A vacía)', col0, col1 });
+      } else if (!col1) {
+        discarded.push({ fila: i + 2, motivo: 'sin estado (col B vacía)', col0, col1 });
+      } else if (status !== 'active') {
+        discarded.push({ fila: i + 2, motivo: `estado no activo: "${col1}"`, col0, col1 });
+      } else {
+        const parts = col0.split(' ');
+        TCM_LIST.push({ code: parts[0], name: parts.slice(1).join(' '), full: col0 });
+      }
+    });
+    if (discarded.length > 0) {
+      console.log(`⚠️ ${discarded.length} filas descartadas:`);
+      console.table(discarded);
+    }
     console.log(`✅ TCM List loaded: ${TCM_LIST.length} activos`);
+    console.groupEnd();
   } catch(e) {
     console.warn("⚠️ No se pudo cargar lista de TCMs", e);
   }
