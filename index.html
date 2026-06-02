@@ -107,6 +107,7 @@
 
     /* ── Field validation ── */
     .field-error { border-color: #ef4444 !important; }
+    button.field-error { outline: 2px solid #ef4444 !important; outline-offset: 1px; border-color: #ef4444 !important; }
 
     /* ── Inputs & selects — base border ── */
     input[type="text"], input[type="url"], input[type="number"], select {
@@ -375,7 +376,7 @@
                 onclick="submitSale()"
                 class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition duration-150 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled>
-        💾 Guardar
+        💾 Guardar para generar Cluster ID
         </button>
 
         <p class="text-xs text-gray-500 mt-2 text-center">
@@ -567,7 +568,7 @@ const TRANSLATIONS = {
     col3Placeholder: "Completa los datos del estudiante y presiona 'Sugerir Grupos' para ver resultados.",
     col4Header: 'Confirmar y Guardar', summaryTitle: '📋 Resumen:',
     summaryPlaceholder: 'Selecciona un grupo para ver el resumen.',
-    btnSave: '💾 Guardar', saveNote: 'Los datos se registrarán automáticamente.',
+    btnSave: '💾 Guardar para generar Cluster ID', saveNote: 'Los datos se registrarán automáticamente.',
     modalActiveTitle: 'Grupos Activos Disponibles', modalActiveSubtitle: 'Selecciona un grupo para registrar la solicitud',
     modalPossibleTitle: 'Grupos Posibles Disponibles', modalPossibleSubtitle: 'Grupos creados por demanda',
     modalScheduleTitle: '🕐 Disponibilidad Horaria',
@@ -603,11 +604,13 @@ const TRANSLATIONS = {
     summaryAgeLabel: 'Edad:', summaryAgeUnit: 'años',
     summaryClusterId: '🆔 Cluster ID:', summaryClusterNote: '(Se copia al portapapeles al guardar)',
     summaryAvailability: 'Disponibilidad:', summaryScheduleCount: n => `${n} horarios`,
+    summaryScheduleWarning: 'Al guardar esta venta, confirmas que el cliente podría tomar un grupo en cualquiera de los horarios elegidos.',
     summaryPossibleGroup: 'Grupo posible:', summarySelection: 'Selección:',
     summaryTagPossible: '[Posible]', summaryTagActive: '[Activo]',
     msgConnectionLimitedTitle: '⚠️ Conexión limitada', msgConnectionLimitedBody: 'No se pudieron cargar los datos. Intenta refrescar la página.',
     msgIncompleteTitle: '⚠️ Campos incompletos',
     msgSelectCourse: 'Selecciona un curso.', msgAgeRange: 'La edad debe estar entre 5 y 17 años.',
+    msgScheduleRequired: 'Debes marcar al menos un horario de disponibilidad antes de buscar.',
     msgAmoRequired: 'El AMO Link es obligatorio.',
     msgAmoInvalid: 'AMO Link inválido. Formato esperado: https://kodland.amocrm.ru/leads/detail/12345',
     msgMatchFoundTitle: '✅ Coincidencias encontradas', msgMatchFoundBody: 'Resultados filtrados por disponibilidad horaria.',
@@ -637,7 +640,7 @@ const TRANSLATIONS = {
     col3Placeholder: "Preencha os dados do aluno e clique em 'Sugerir Grupos' para ver os resultados.",
     col4Header: 'Confirmar e Salvar', summaryTitle: '📋 Resumo:',
     summaryPlaceholder: 'Selecione um grupo para ver o resumo.',
-    btnSave: '💾 Salvar', saveNote: 'Os dados serão registrados automaticamente.',
+    btnSave: '💾 Salvar para gerar Cluster ID', saveNote: 'Os dados serão registrados automaticamente.',
     modalActiveTitle: 'Grupos Ativos Disponíveis', modalActiveSubtitle: 'Selecione um grupo para registrar a solicitação',
     modalPossibleTitle: 'Grupos Possíveis Disponíveis', modalPossibleSubtitle: 'Grupos criados por demanda',
     modalScheduleTitle: '🕐 Disponibilidade de Horário',
@@ -673,11 +676,13 @@ const TRANSLATIONS = {
     summaryAgeLabel: 'Idade:', summaryAgeUnit: 'anos',
     summaryClusterId: '🆔 Cluster ID:', summaryClusterNote: '(Será copiado para a área de transferência ao salvar)',
     summaryAvailability: 'Disponibilidade:', summaryScheduleCount: n => `${n} horários`,
+    summaryScheduleWarning: 'Ao salvar esta venda, você confirma que o aluno poderá ser alocado em qualquer um dos horários escolhidos.',
     summaryPossibleGroup: 'Grupo possível:', summarySelection: 'Seleção:',
     summaryTagPossible: '[Possível]', summaryTagActive: '[Ativo]',
     msgConnectionLimitedTitle: '⚠️ Conexão limitada', msgConnectionLimitedBody: 'Não foi possível carregar os dados. Tente atualizar a página.',
     msgIncompleteTitle: '⚠️ Campos incompletos',
     msgSelectCourse: 'Selecione um curso.', msgAgeRange: 'A idade deve estar entre 5 e 17 anos.',
+    msgScheduleRequired: 'Você deve marcar pelo menos um horário de disponibilidade antes de buscar.',
     msgAmoRequired: 'O AMO Link é obrigatório.',
     msgAmoInvalid: 'AMO Link inválido. Formato esperado: https://kodland.amocrm.ru/leads/detail/12345',
     msgMatchFoundTitle: '✅ Correspondências encontradas', msgMatchFoundBody: 'Resultados filtrados por disponibilidade de horário.',
@@ -707,7 +712,7 @@ const TRANSLATIONS = {
     col3Placeholder: "Öğrenci bilgilerini doldurun ve 'Grup Öner'e basın.",
     col4Header: 'Onayla ve Kaydet', summaryTitle: '📋 Özet:',
     summaryPlaceholder: 'Özeti görmek için bir grup seçin.',
-    btnSave: '💾 Kaydet', saveNote: 'Veriler otomatik olarak kaydedilecek.',
+    btnSave: '💾 Cluster ID oluşturmak için kaydet', saveNote: 'Veriler otomatik olarak kaydedilecek.',
     modalActiveTitle: 'Mevcut Aktif Gruplar', modalActiveSubtitle: 'Talebi kaydetmek için bir grup seçin',
     modalPossibleTitle: 'Mevcut Olası Gruplar', modalPossibleSubtitle: 'Talebe göre oluşturulan gruplar',
     modalScheduleTitle: '🕐 Müsait Saatler',
@@ -743,11 +748,13 @@ const TRANSLATIONS = {
     summaryAgeLabel: 'Yaş:', summaryAgeUnit: 'yaş',
     summaryClusterId: '🆔 Cluster ID:', summaryClusterNote: '(Kayıt sırasında panoya kopyalanacak)',
     summaryAvailability: 'Müsaitlik:', summaryScheduleCount: n => `${n} saat`,
+    summaryScheduleWarning: 'Bu satışı kaydederek, öğrencinin seçilen herhangi bir saatte gruba yerleştirilebileceğini onaylıyorsunuz.',
     summaryPossibleGroup: 'Olası grup:', summarySelection: 'Seçim:',
     summaryTagPossible: '[Olası]', summaryTagActive: '[Aktif]',
     msgConnectionLimitedTitle: '⚠️ Bağlantı sınırlı', msgConnectionLimitedBody: 'Veriler yüklenemedi. Sayfayı yenilemeyi deneyin.',
     msgIncompleteTitle: '⚠️ Eksik alanlar',
     msgSelectCourse: 'Bir kurs seçin.', msgAgeRange: 'Yaş 5 ile 17 arasında olmalıdır.',
+    msgScheduleRequired: 'Aramadan önce en az bir uygunluk saati işaretlemelisiniz.',
     msgAmoRequired: 'AMO Link zorunludur.',
     msgAmoInvalid: 'Geçersiz AMO Link. Beklenen format: https://kodland.amocrm.ru/leads/detail/12345',
     msgMatchFoundTitle: '✅ Eşleşmeler bulundu', msgMatchFoundBody: 'Sonuçlar müsait saatlere göre filtrelendi.',
@@ -770,6 +777,7 @@ let T = TRANSLATIONS.latam;
 // ============================================
 let LIVE_COURSE_DATA = [];
 let LIVE_POSSIBLE_GROUPS = [];
+let COURSE_CAPACITY_MAP = new Map();
 let connectionStatus = { connected: false, method: null };
 let lastFetchTime = null;
 let isFetching = false;
@@ -874,19 +882,35 @@ async function fetchCourseMap(url) {
   const text = await resp.text();
   const { rows } = parseCSVRobust(text);
   // rows[0] = fila 2 del sheet (sub-cabecera); datos desde rows[1] = C3
-  return rows.slice(1).map(r => {
+  const parsed = rows.slice(1).map(r => {
     const colC = (r[2] || "").trim();
     const colG = (r[6] || "").trim();
     const match = colC.match(/\[(\d+)\]/);
     if (!match || !colG) return null;
-    return { id: parseInt(match[1]), name: colG };
+    return {
+      id: parseInt(match[1]),
+      name: colG,
+      prmCapacity: parseInt(r[3]) || 4,
+      standardCapacity: parseInt(r[4]) || 14
+    };
   }).filter(Boolean);
+
+  // Agrupar por nombre: cursos con el mismo ShortCut comparten una opción del dropdown
+  const grouped = new Map();
+  for (const entry of parsed) {
+    if (grouped.has(entry.name)) {
+      grouped.get(entry.name).ids.push(entry.id);
+    } else {
+      grouped.set(entry.name, { ids: [entry.id], name: entry.name, prmCapacity: entry.prmCapacity, standardCapacity: entry.standardCapacity });
+    }
+  }
+  return Array.from(grouped.values());
 }
 
 function populateCourseDropdown(courses) {
   const select = document.getElementById("course_type");
   select.innerHTML = `<option value="">${T.courseSelectPlaceholder}</option>` +
-    courses.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+    courses.map(c => `<option value="${c.ids.join(',')}">${c.name}</option>`).join("");
 }
 
 async function selectRegion(regionKey) {
@@ -924,6 +948,8 @@ async function selectRegion(regionKey) {
   // Carga lista de cursos y popula dropdown
   try {
     const courses = await fetchCourseMap(config.courseListCsv);
+    COURSE_CAPACITY_MAP = new Map();
+    courses.forEach(c => c.ids.forEach(id => COURSE_CAPACITY_MAP.set(id, { prmCapacity: c.prmCapacity, standardCapacity: c.standardCapacity })));
     if (courses.length > 0) {
       populateCourseDropdown(courses);
     } else {
@@ -1318,7 +1344,10 @@ function mapRowsToPossibleGroups(headers, rows) {
     const day = parseDayAbbreviation(dayRaw);
     const ageRange = parseAgeRange(ageRangeStr);
     const isPremium = format.includes("prm") || format.includes("premium");
-    const capacity = isPremium ? 4 : 14;
+    const capEntry = COURSE_CAPACITY_MAP.get(idRef);
+    const capacity = isPremium
+      ? (capEntry?.prmCapacity ?? 4)
+      : (capEntry?.standardCapacity ?? 14);
 
     if (students > capacity) continue;
 
@@ -1606,7 +1635,7 @@ function calculateScheduleMatchScore(course) {
 // DIAGNÓSTICO Y MATCHING (CON MONITOR DE LOGICA)
 // ============================================
 async function diagnoseAndMatch() {
-  ['amo_crm_link', 'student_age', 'course_type'].forEach(id => {
+  ['amo_crm_link', 'student_age', 'course_type', 'btn_select_schedule'].forEach(id => {
     document.getElementById(id).classList.remove('field-error');
   });
   const amoCrmLink = document.getElementById("amo_crm_link").value.trim();
@@ -1628,6 +1657,10 @@ async function diagnoseAndMatch() {
   } else if (!amoRegex.test(amoCrmLink)) {
     validationErrors.push(T.msgAmoInvalid);
     document.getElementById("amo_crm_link").classList.add('field-error');
+  }
+  if (preferredSchedule.length === 0) {
+    validationErrors.push(T.msgScheduleRequired);
+    document.getElementById("btn_select_schedule").classList.add('field-error');
   }
   if (validationErrors.length > 0) {
     showSystemMessage('error', T.msgIncompleteTitle, validationErrors.join(' · '));
@@ -1653,8 +1686,7 @@ async function diagnoseAndMatch() {
   const groupType = document.getElementById("group_type").value;
 
   // 1. FILTRADO INICIAL
-  const selectedId = parseInt(courseType);
-  const allowedIds = selectedId ? [selectedId] : [];
+  const allowedIds = courseType ? courseType.split(',').map(Number).filter(Boolean) : [];
 
   // Filtrar Activos
   let filteredActive = LIVE_COURSE_DATA.filter(c => {
@@ -1942,9 +1974,9 @@ const DAY_KEY_TO_IDX = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5, sun: 6 
 
 function getMatrixGroups() {
   const age       = parseInt(document.getElementById('student_age').value, 10);
-  const selectedId = parseInt(document.getElementById('course_type').value);
+  const courseType = document.getElementById('course_type').value;
   const groupType = document.getElementById('group_type').value;
-  const allowedIds = selectedId ? [selectedId] : [];
+  const allowedIds = courseType ? courseType.split(',').map(Number).filter(Boolean) : [];
   return LIVE_POSSIBLE_GROUPS.filter(c => {
     if (allowedIds.length > 0 && !allowedIds.includes(c.courseId)) return false;
     if (!isNaN(age) && (age < c.min_age || age > c.max_age)) return false;
@@ -2197,24 +2229,16 @@ function updateSaleSummary() {
   if (amoCrm) html += `<div><strong>${T.summaryAmoCrmLabel}</strong> <a href="${amoCrm}" target="_blank" class="text-blue-600 hover:underline">${T.summaryAmoCrmLink}</a></div>`;
   html += `<div><strong>${T.summaryAgeLabel}</strong> ${age} ${T.summaryAgeUnit}</div>`;
   
-  // --- NUEVO: MOSTRAR CLUSTER ID SI EXISTE ---
-  // Buscamos si hay algún grupo posible seleccionado con ID
-  const possibleGroup = selectedCourses.find(c => c.type === 'possible' && c.semanticId);
-  if (possibleGroup) {
-      html += `<div class="bg-yellow-100 p-2 rounded border border-yellow-300 text-yellow-800">
-        <strong>${T.summaryClusterId}</strong> <span class="font-mono text-lg font-bold">${possibleGroup.semanticId}</span>
-        <div class="text-xs mt-1 text-gray-600">${T.summaryClusterNote}</div>
-      </div>`;
+  if (preferredSchedule.length > 0) {
+    const dayKeys = ['mon','tue','wed','thu','fri','sat','sun'];
+    const dayMap = Object.fromEntries(dayKeys.map((k, i) => [k, T.scheduleTableDays[i]]));
+    const scheduleList = preferredSchedule.map(s => `${dayMap[s.day] || s.day} ${s.hour}:00`).join(', ');
+    html += `<div><strong>${T.summaryAvailability}</strong> ${scheduleList}</div>`;
+    html += `<div class="text-xs text-gray-400 mt-1">${T.summaryScheduleWarning}</div>`;
   }
-  // -------------------------------------------
-
-  const scheduleParts = [];
-  if (preferredSchedule.length > 0) scheduleParts.push(T.summaryScheduleCount(preferredSchedule.length));
-  selectedCourses.filter(c => c.type === 'possible' && c.next_start).forEach(c => {
-    scheduleParts.push(`${T.summaryPossibleGroup} ${c.next_start}`);
-  });
-  if (scheduleParts.length > 0) {
-    html += `<div><strong>${T.summaryAvailability}</strong> ${scheduleParts.join(' | ')}</div>`;
+  const possibleNextStarts = selectedCourses.filter(c => c.type === 'possible' && c.next_start);
+  if (possibleNextStarts.length > 0) {
+    html += `<div>${possibleNextStarts.map(c => `${T.summaryPossibleGroup} ${c.next_start}`).join(' | ')}</div>`;
   }
 
   html += `<div class="mt-2 border-t pt-2"><strong>${T.summarySelection}</strong></div>`;
@@ -2471,11 +2495,23 @@ async function submitSale() {
     // 5. Feedback Final
     showSystemMessage('success', T.msgSavedTitle, copyMessage ? T.msgSavedCluster : T.msgSavedOk);
 
+    // Mostrar Cluster ID en el resumen tras guardado exitoso
+    const savedPossibleGroup = selectedCourses.find(c => c.type === 'possible' && c.semanticId);
+    if (savedPossibleGroup) {
+      const summaryContent = document.getElementById("summary-content");
+      const spaceDiv = summaryContent.querySelector('.space-y-2');
+      const clusterDiv = document.createElement('div');
+      clusterDiv.className = 'bg-yellow-100 p-2 rounded border border-yellow-300 text-yellow-800';
+      clusterDiv.innerHTML = `<strong>${T.summaryClusterId}</strong> <span class="font-mono text-lg font-bold">${savedPossibleGroup.semanticId}</span><div class="text-xs mt-1 text-gray-600">${T.summaryClusterNote}</div>`;
+      if (spaceDiv) spaceDiv.insertBefore(clusterDiv, spaceDiv.firstChild);
+      else summaryContent.appendChild(clusterDiv);
+    }
+
     if (copyMessage) {
         const textToCopy = `Selector Tool - Cluster ${selectedCourses.find(c => c.type === 'possible' && c.semanticId)?.semanticId}`;
         alert(T.alertSaved(textToCopy));
     }
-    
+
     setTimeout(() => { resetForNextStudent(); }, 2000);
     
   } catch (error) {
