@@ -1219,13 +1219,13 @@ function parseTimeToMinutes(timeStr) {
 
 function parseDayAbbreviation(dayStr) {
   const dayMap = {
-    'mon': 'lunes', 'monday': 'lunes',
-    'tue': 'martes', 'tuesday': 'martes',  
-    'wed': 'miércoles', 'wednesday': 'miércoles',
-    'thu': 'jueves', 'thursday': 'jueves',
-    'fri': 'viernes', 'friday': 'viernes',
-    'sat': 'sábado', 'saturday': 'sábado',
-    'sun': 'domingo', 'sunday': 'domingo',
+    'mon': 'lunes', 'monday': 'lunes', 'pzt': 'lunes', 'pazartesi': 'lunes',
+    'tue': 'martes', 'tuesday': 'martes', 'sal': 'martes', 'salı': 'martes', 'sali': 'martes',
+    'wed': 'miércoles', 'wednesday': 'miércoles', 'çar': 'miércoles', 'çarşamba': 'miércoles', 'carsamba': 'miércoles',
+    'thu': 'jueves', 'thursday': 'jueves', 'per': 'jueves', 'perşembe': 'jueves', 'persembe': 'jueves',
+    'fri': 'viernes', 'friday': 'viernes', 'cum': 'viernes', 'cuma': 'viernes',
+    'sat': 'sábado', 'saturday': 'sábado', 'cmt': 'sábado', 'cumartesi': 'sábado',
+    'sun': 'domingo', 'sunday': 'domingo', 'paz': 'domingo', 'pazar': 'domingo',
     'lun': 'lunes', 'lunes': 'lunes',
     'mar': 'martes', 'martes': 'martes',
     'mié': 'miércoles', 'mie': 'miércoles', 'miércoles': 'miércoles', 'miercoles': 'miércoles',
@@ -1939,8 +1939,28 @@ function renderCourseList(courses, showIndex = true) {
        const clientTimeFull = convertColombiaToClient(tempDate); 
        displayTime = `<b>${clientTimeFull}</b> <span class="text-xs text-blue-600">${T.cardTimezone}</span> <span class="text-gray-400 text-xs">| ${colTimeLabel} ${T.cardTimezoneRef}</span>`;
     } else {
-       const safeDate = course.next_start || "Fecha Pendiente";
-       displayTime = `${safeDate} <span class="text-gray-400 text-xs">| ${colTimeLabel} COL</span>`;
+       // Diccionario para traducir el día interno (español) al idioma de la UI
+       const regionalDays = {
+           turkey: { 'lunes': 'Pazartesi', 'martes': 'Salı', 'miércoles': 'Çarşamba', 'jueves': 'Perşembe', 'viernes': 'Cuma', 'sábado': 'Cumartesi', 'domingo': 'Pazar', 'Fecha Pendiente': 'Tarih Bekleniyor' },
+           brazil: { 'lunes': 'Segunda-feira', 'martes': 'Terça-feira', 'miércoles': 'Quarta-feira', 'jueves': 'Quinta-feira', 'viernes': 'Sexta-feira', 'sábado': 'Sábado', 'domingo': 'Domingo', 'Fecha Pendiente': 'Data Pendente' },
+           latam:  { 'lunes': 'Lunes', 'martes': 'Martes', 'miércoles': 'Miércoles', 'jueves': 'Jueves', 'viernes': 'Viernes', 'sábado': 'Sábado', 'domingo': 'Domingo', 'Fecha Pendiente': 'Fecha Pendiente' }
+       };
+
+       let safeDate = course.next_start || regionalDays[currentRegion]['Fecha Pendiente'];
+
+       // Si la variable contiene el día interno en español, aplicamos la traducción regional
+       if (course.day) {
+           const dayEs = course.day.toLowerCase();
+           const dayLoc = regionalDays[currentRegion][dayEs];
+           if (dayLoc) {
+               // Reemplazamos el día al inicio del string (ignorando mayúsculas/minúsculas)
+               const regex = new RegExp(`^${dayEs}`, 'i');
+               safeDate = safeDate.replace(regex, dayLoc);
+           }
+       }
+       
+       // Usamos T.cardTimezoneRef para que muestre "TUR" o "BRA" en lugar de estar fijado en "COL"
+       displayTime = `${safeDate} <span class="text-gray-400 text-xs">| ${colTimeLabel} ${T.cardTimezoneRef}</span>`;
     }
 
     // 2. CONSTRUCCIÓN DE LA TARJETA
