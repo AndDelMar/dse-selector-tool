@@ -409,6 +409,48 @@
     </div>
   </div>
 
+  <!-- PANTALLA DE CONFIRMACIÓN (Success Screen) -->
+  <div id="success-screen" class="hidden" style="display:none;">
+    <div class="max-w-2xl mx-auto mt-8 mb-16 px-4">
+      <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 md:p-12 text-center">
+        <!-- Success Icon -->
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-6">
+          <i class="fas fa-check text-4xl text-green-600"></i>
+        </div>
+
+        <!-- Title -->
+        <h2 id="success-title" class="text-3xl font-extrabold text-gray-900 mb-3"></h2>
+
+        <!-- Subtitle -->
+        <p id="success-subtitle" class="text-lg text-gray-600 mb-8"></p>
+
+        <!-- Cluster ID - Very prominent -->
+        <div id="success-cluster-id" class="bg-gray-50 rounded-xl border-2 border-green-500 p-6 mb-8">
+          <div id="success-cluster-label" class="text-xs font-semibold text-green-700 uppercase tracking-wider mb-2"></div>
+          <div class="text-4xl md:text-5xl font-extrabold text-gray-900 font-mono tracking-tight select-all" style="user-select: all;">
+            <span id="cluster-id-value">—</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-3">(Clic para seleccionar y copiar)</p>
+        </div>
+
+        <!-- Summary -->
+        <div id="success-summary" class="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+          <h3 id="success-summary-label" class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4"></h3>
+          <div id="success-summary-content" class="text-sm text-gray-600 space-y-2">
+            <!-- Summary content will be injected here -->
+          </div>
+        </div>
+
+        <!-- New Student Button -->
+        <button id="btn-new-student"
+                class="w-full sm:w-auto px-8 py-4 bg-gray-900 text-white rounded-xl font-semibold text-lg hover:bg-gray-700 transition-colors duration-150 shadow-lg">
+          <i class="fas fa-plus mr-2"></i>
+          <span id="btn-new-student-text"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Matrix fullscreen modal -->
   <div id="matrix-overlay" class="modal-overlay" onclick="closeMatrixView()"></div>
   <div id="matrix-modal" class="modal-container fullscreen">
@@ -643,6 +685,11 @@ const TRANSLATIONS = {
     msgSelectGroupSave: 'Selecciona un grupo antes de guardar.', msgSelectTcm: 'Selecciona tu nombre de la lista.',
     msgSavedTitle: '✅ Registro guardado', msgSavedCluster: 'Solicitud registrada. Cluster ID copiado al portapapeles.',
     msgSavedOk: 'La solicitud se registró correctamente.',
+    successTitle: '¡Registro Exitoso!',
+    successSubtitle: 'La solicitud ha sido enviada.',
+    successClusterIdLabel: '🆔 Cluster ID',
+    successSummaryLabel: 'Resumen de la selección',
+    successBtnNew: 'Registrar nuevo estudiante',
     msgErrorTitle: '❌ Error', msgErrorSave: 'No se pudo guardar. Intenta de nuevo.',
     alertSaved: clip => `✅ ¡Registro Guardado!\n\n📋 COPIADO AL PORTAPAPELES:\n"${clip}"\n\nYa puedes pegarlo en el Formulario de Pago.`,
     teacherTbd: 'Por asignar',
@@ -717,6 +764,11 @@ const TRANSLATIONS = {
     msgSelectGroupSave: 'Selecione um grupo antes de salvar.', msgSelectTcm: 'Selecione seu nome na lista.',
     msgSavedTitle: '✅ Registro salvo', msgSavedCluster: 'Solicitação registrada. Cluster ID copiado para a área de transferência.',
     msgSavedOk: 'A solicitação foi registrada com sucesso.',
+    successTitle: 'Registro Salvo!',
+    successSubtitle: 'A solicitação foi enviada.',
+    successClusterIdLabel: '🆔 Cluster ID',
+    successSummaryLabel: 'Resumo da seleção',
+    successBtnNew: 'Registrar novo aluno',
     msgErrorTitle: '❌ Erro', msgErrorSave: 'Não foi possível salvar. Tente novamente.',
     alertSaved: clip => `✅ Registro Salvo!\n\n📋 COPIADO PARA A ÁREA DE TRANSFERÊNCIA:\n"${clip}"\n\nJá pode colar no Formulário de Pagamento.`,
     teacherTbd: 'A definir',
@@ -791,6 +843,11 @@ const TRANSLATIONS = {
     msgSelectGroupSave: 'Kaydetmeden önce bir grup seçin.', msgSelectTcm: 'Listeden adınızı seçin.',
     msgSavedTitle: '✅ Kayıt tamamlandı', msgSavedCluster: 'Talep kaydedildi. Cluster ID panoya kopyalandı.',
     msgSavedOk: 'Talep başarıyla kaydedildi.',
+    successTitle: 'Kayıt Tamamlandı!',
+    successSubtitle: 'Talep gönderildi.',
+    successClusterIdLabel: '🆔 Cluster ID',
+    successSummaryLabel: 'Seçim Özeti',
+    successBtnNew: 'Yeni öğrenci kaydet',
     msgErrorTitle: '❌ Hata', msgErrorSave: 'Kaydedilemedi. Lütfen tekrar deneyin.',
     alertSaved: clip => `✅ Kayıt Tamamlandı!\n\n📋 PANOYA KOPYALANDI:\n"${clip}"\n\nÖdeme Formuna yapıştırabilirsiniz.`,
     teacherTbd: 'Atanacak',
@@ -901,6 +958,14 @@ function applyTranslations(regionKey) {
   if (mmTitle) mmTitle.textContent = T.matrixTitle;
   if (mmSub)   mmSub.textContent   = T.matrixSubtitle;
   if (mdTitle) mdTitle.textContent  = T.matrixDetailTitle;
+
+  // Success screen
+  el('success-title').textContent = T.successTitle;
+  el('success-subtitle').textContent = T.successSubtitle;
+  el('success-title').textContent = T.successTitle;
+ el('success-cluster-label').textContent = T.successClusterIdLabel;
+  el('success-summary-label').textContent = T.successSummaryLabel;
+  el('btn-new-student-text').textContent = T.successBtnNew;
 }
 
 // ============================================
@@ -1205,10 +1270,21 @@ function extractCourseType(courseName, courseTitle) {
 }
 
 function parseISODateOnly(s) {
-  const m = String(s || "").match(/(\d{4}-\d{2}-\d{2})/);
-  if (!m) return null;
-  const d = new Date(m[1] + "T00:00:00");
-  return isNaN(d.getTime()) ? null : d;
+  const str = String(s || "").trim();
+  if (!str) return null;
+  // Intentar formato YYYY-MM-DD
+  let m = str.match(/(\d{4})[\/\-](\d{2})[\/\-](\d{2})/);
+  if (m && m[1].length === 4) {
+    const d = new Date(m[1] + "-" + m[2] + "-" + m[3] + "T00:00:00");
+    return isNaN(d.getTime()) ? null : d;
+  }
+  // Intentar formato DD/MM/YYYY o DD-MM-YYYY
+  m = str.match(/(\d{2})[\/\-](\d{2})[\/\-](\d{4})/);
+  if (m) {
+    const d = new Date(m[3] + "-" + m[2] + "-" + m[1] + "T00:00:00");
+    return isNaN(d.getTime()) ? null : d;
+  }
+  return null;
 }
 
 function parseTimeToMinutes(timeStr) {
@@ -1316,10 +1392,16 @@ function mapRowsToCourses(headers, rows) {
     
     if (!name || (status && status !== "active")) continue;
     if (name.includes("WRONG") || name.includes("ERROR")) continue;
+    if (name.toUpperCase().includes('IND') || internalCode.toUpperCase().includes('IND')) continue; // EXCLUIR GRUPOS INDIVIDUALES
     if (capacity > 0 && enrolled > capacity) continue;
 
     const startDate = parseISODateOnly(rawDate);
-    if (startDate && startDate < oneWeekAgo) continue;
+    if (rawDate) {
+      // Si hay texto en la celda pero el parser devolvió null (fecha inválida o basura), lo descartamos
+      if (!startDate) continue; 
+      // Si es una fecha válida pero es anterior a hace una semana, lo descartamos
+      if (startDate < oneWeekAgo) continue; 
+    }
 
     // Extracción de ID y Edad
     const idMatch = name.match(/\[(\d+)\]/);
@@ -1385,7 +1467,7 @@ function mapRowsToPossibleGroups(headers, rows) {
     let idRef = 0;
     try { idRef = parseInt(r[20] || "0"); } catch (e) { idRef = 0; }
 
-    if (!courseName || courseName.startsWith("•") || !dayRaw) continue;
+    if (!courseName || courseName.startsWith("•") || !dayRaw || courseName.toUpperCase().includes('IND')) continue; // EXCLUIR GRUPOS INDIVIDUALES
 
     const day = parseDayAbbreviation(dayRaw);
     const ageRange = parseAgeRange(ageRangeStr);
@@ -2499,6 +2581,55 @@ function resetForNextStudent() {
   document.getElementById("toast-container").innerHTML = "";
 }
 
+function showSuccessScreen(clusterId, copiedText) {
+  const appContainer = document.getElementById("app-container");
+  const successScreen = document.getElementById("success-screen");
+  
+  // Hide app container, show success screen
+  appContainer.style.display = "none";
+  successScreen.classList.remove("hidden");
+  
+  // Populate translated texts
+  document.getElementById("success-title").textContent = T.successTitle;
+  document.getElementById("success-subtitle").textContent = T.successSubtitle;
+  document.getElementById("success-cluster-label").textContent = T.successClusterIdLabel;
+  document.getElementById("success-summary-label").textContent = T.successSummaryLabel;
+  document.getElementById("btn-new-student-text").textContent = T.successBtnNew;
+  
+  // Populate cluster ID
+  const clusterIdValueEl = document.getElementById("cluster-id-value");
+  if (clusterIdValueEl) {
+    clusterIdValueEl.textContent = clusterId || "—";
+  }
+  
+  // Copy summary HTML from #summary-content to #success-summary
+  const sourceSummary = document.getElementById("summary-content");
+  const targetSummary = document.getElementById("success-summary");
+  if (sourceSummary && targetSummary) {
+    targetSummary.innerHTML = sourceSummary.innerHTML;
+  }
+  
+  // Copy to clipboard if there's text
+  if (copiedText) {
+    navigator.clipboard.writeText(copiedText).catch(() => {});
+  }
+}
+
+function resetForNewStudent() {
+  // Hide success screen, show app container
+  const appContainer = document.getElementById("app-container");
+  const successScreen = document.getElementById("success-screen");
+  
+  successScreen.classList.add("hidden");
+  appContainer.style.display = "";
+  
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  
+  // Reset all state (same as resetForNextStudent)
+  resetForNextStudent();
+}
+
 async function submitSale() {
   const tcmName = document.getElementById("tcm_name").value.trim();
   const errors = [];
@@ -2578,27 +2709,41 @@ async function submitSale() {
         copyMessage = `\n\n📋 COPIADO AL PORTAPAPELES:\n"${textToCopy}"`;
     }
 
-    // 5. Feedback Final
-    showSystemMessage('success', T.msgSavedTitle, copyMessage ? T.msgSavedCluster : T.msgSavedOk);
-
-    // Mostrar Cluster ID en el resumen tras guardado exitoso
-    const savedPossibleGroup = selectedCourses.find(c => c.type === 'possible' && c.semanticId);
-    if (savedPossibleGroup) {
-      const summaryContent = document.getElementById("summary-content");
-      const spaceDiv = summaryContent.querySelector('.space-y-2');
-      const clusterDiv = document.createElement('div');
-      clusterDiv.className = 'bg-yellow-100 p-2 rounded border border-yellow-300 text-yellow-800';
-      clusterDiv.innerHTML = `<strong>${T.summaryClusterId}</strong> <span class="font-mono text-lg font-bold">${savedPossibleGroup.semanticId}</span><div class="text-xs mt-1 text-gray-600">${T.summaryClusterNote}</div>`;
-      if (spaceDiv) spaceDiv.insertBefore(clusterDiv, spaceDiv.firstChild);
-      else summaryContent.appendChild(clusterDiv);
+    // 5. Feedback Final - Mostrar pantalla de éxito
+    const possibleGroupForCopy = selectedCourses.find(c => c.type === 'possible' && c.semanticId);
+    const clusterId = possibleGroupForCopy?.semanticId || "";
+    const textToCopy = clusterId ? `Selector Tool - Cluster ${clusterId}` : "";
+    
+    // Hide app container, show success screen
+    const appContainer = document.getElementById("app-container");
+    const successScreen = document.getElementById("success-screen");
+    appContainer.style.display = "none";
+    successScreen.classList.remove("hidden");
+    
+    // Populate translated texts
+    document.getElementById("success-title").textContent = T.successTitle;
+    document.getElementById("success-subtitle").textContent = T.successSubtitle;
+    document.getElementById("success-cluster-label").textContent = T.successClusterIdLabel;
+    document.getElementById("success-summary-label").textContent = T.successSummaryLabel;
+    document.getElementById("btn-new-student-text").textContent = T.successBtnNew;
+    
+    // Populate cluster ID
+    const clusterIdValueEl = document.getElementById("cluster-id-value");
+    if (clusterIdValueEl) {
+      clusterIdValueEl.textContent = clusterId || "—";
     }
-
-    if (copyMessage) {
-        const textToCopy = `Selector Tool - Cluster ${selectedCourses.find(c => c.type === 'possible' && c.semanticId)?.semanticId}`;
-        alert(T.alertSaved(textToCopy));
+    
+    // Copy summary HTML from #summary-content to #success-summary
+    const sourceSummary = document.getElementById("summary-content");
+    const targetSummary = document.getElementById("success-summary");
+    if (sourceSummary && targetSummary) {
+      targetSummary.innerHTML = sourceSummary.innerHTML;
     }
-
-    setTimeout(() => { resetForNextStudent(); }, 2000);
+    
+    // Copy to clipboard if there's text
+    if (textToCopy) {
+      navigator.clipboard.writeText(textToCopy).catch(() => {});
+    }
     
   } catch (error) {
     console.error("❌ Error:", error);
@@ -2714,6 +2859,12 @@ window.onload = () => {
   populateTimezones('latam');
   document.getElementById("student_age").value = 10;
   setInterval(() => { if (lastFetchTime) updateDataSourceInfo(); }, 30000);
+  
+  // Event listener for "Nuevo Estudiante" button on success screen
+  const btnNewStudent = document.getElementById("btn-new-student");
+  if (btnNewStudent) {
+    btnNewStudent.addEventListener("click", resetForNewStudent);
+  }
 };
 </script>
 <div id="toast-container"></div>
