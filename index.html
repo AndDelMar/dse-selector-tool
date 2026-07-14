@@ -426,12 +426,17 @@
 
         <!-- Cluster ID - Very prominent -->
         <div id="success-cluster-id" class="bg-gray-50 rounded-xl border-2 border-green-500 p-6 mb-8">
-          <div id="success-cluster-label" class="text-xs font-semibold text-green-700 uppercase tracking-wider mb-2"></div>
-          <div class="text-4xl md:text-5xl font-extrabold text-gray-900 font-mono tracking-tight select-all" style="user-select: all;">
-            <span id="cluster-id-value">—</span>
-          </div>
-          <p class="text-xs text-gray-500 mt-3">(Clic para seleccionar y copiar)</p>
-        </div>
+  <div id="success-cluster-label" class="text-xs font-semibold text-green-700 uppercase tracking-wider mb-2"></div>
+  <div class="flex items-center justify-center gap-4">
+    <div class="text-4xl md:text-5xl font-extrabold text-gray-900 font-mono tracking-tight select-all notranslate" style="user-select: all;" translate="no">
+      <span id="cluster-id-value">—</span>
+    </div>
+    <button onclick="copyClusterId()" id="btn-copy-cluster" class="text-gray-400 hover:text-blue-600 transition-colors p-2" title="Copiar al portapapeles">
+      <i class="fas fa-copy text-2xl"></i>
+    </button>
+  </div>
+  <p class="text-xs text-gray-500 mt-3">(Clic para seleccionar y copiar)</p>
+</div>
 
         <!-- Summary -->
         <div id="success-summary" class="bg-gray-50 rounded-xl p-6 mb-8 text-left">
@@ -1993,16 +1998,18 @@ function renderCourseList(courses, showIndex = true) {
     if (course.startDateObj && hasValidTime && course.timeStr) {
        const clientOffset = parseInt(document.getElementById("client_timezone").value);
        const diff = clientOffset - SHEET_OFFSET;
-       const clientDate = new Date(course.startDateObj);
+       // Usamos la fecha base
+       const clientDate = new Date(course.startDateObj.getTime());
        const [h, m] = course.timeStr.split(':');
-       clientDate.setHours(parseInt(h), parseInt(m));
-       clientDate.setHours(clientDate.getHours() + diff);
        
-       const dName = dayNames[clientDate.getDay()];
-       const dNum = clientDate.getDate();
-       const mName = monthNames[clientDate.getMonth()];
-       const finalH = clientDate.getHours().toString().padStart(2, '0');
-       const finalM = clientDate.getMinutes().toString().padStart(2, '0');
+       // Aislar el cálculo usando UTC para evitar intromisión del navegador local
+       clientDate.setUTCHours(parseInt(h) + diff, parseInt(m));
+       
+       const dName = dayNames[clientDate.getUTCDay()];
+       const dNum = clientDate.getUTCDate();
+       const mName = monthNames[clientDate.getUTCMonth()];
+       const finalH = clientDate.getUTCHours().toString().padStart(2, '0');
+       const finalM = clientDate.getUTCMinutes().toString().padStart(2, '0');
        const finalDateStr = `${dName} ${dNum} ${mName}, ${finalH}:${finalM}`;
        
        displayTime = `<b>${finalDateStr}</b> <span class="text-xs text-blue-600">${T.cardTimezone}</span> <span class="text-gray-400 text-xs">| ${colTimeLabel} ${T.cardTimezoneRef}</span>`;
@@ -2103,17 +2110,17 @@ function renderCourseList(courses, showIndex = true) {
     }
     
     // Alertas de cupo
-if (course.isFull) {
-  html += `<div class="course-option-urgency critical-text">${T.cardFull}</div>`;
-} else if (remaining === 1) {
-  html += `<div class="course-option-urgency critical-text">${T.cardLastSpot}</div>`;
-} else if (!isPremium && remaining === 2) {
-  html += `<div class="course-option-urgency critical-text">${T.cardUrgent2}</div>`;
-} else if (!isPremium && remaining === 3) {
-  html += `<div class="course-option-urgency warning-text">${T.cardAlmost3}</div>`;
-} else if (!isPremium && almostFull) {
-  html += `<div class="course-option-urgency warning-text">${T.cardAlmostN(remaining)}</div>`;
-}
+    if (course.isFull) {
+      html += `<div class="course-option-urgency critical-text notranslate" translate="no">${T.cardFull}</div>`;
+    } else if (remaining === 1) {
+      html += `<div class="course-option-urgency critical-text notranslate" translate="no">${T.cardLastSpot}</div>`;
+    } else if (!isPremium && remaining === 2) {
+      html += `<div class="course-option-urgency critical-text notranslate" translate="no">${T.cardUrgent2}</div>`;
+    } else if (!isPremium && remaining === 3) {
+      html += `<div class="course-option-urgency warning-text notranslate" translate="no">${T.cardAlmost3}</div>`;
+    } else if (!isPremium && almostFull) {
+      html += `<div class="course-option-urgency warning-text notranslate" translate="no">${T.cardAlmostN(remaining)}</div>`;
+    }
     
     html += `<button onclick="toggleCourseSelection('${course.id}')" class="btn-select mt-3 w-full ${isSelected ? "selected" : "unselected"}" id="btn-select-${course.id}">${isSelected ? T.btnSelected : T.btnSelect}</button>
     </div>`;
@@ -2846,12 +2853,28 @@ function handleFieldChange() {
 // ============================================
 function formatTimeHHMM(timeStr) {
   if (!timeStr) return "";
-  // Busca patrones como 17:00 o 17:00:00
-  const match = String(timeStr).match(/(\d{1,2}):(\d{2})/);
+  const normalized = String(timeStr).replace(/(\d{1,2})\.(\d{2})/, '$1:$2');
+  const match = normalized.match(/(\d{1,2}):(\d{2})/);
   if (match) {
     return `${match[1].padStart(2, '0')}:${match[2].padStart(2, '0')}`;
   }
-  return ""; 
+  return "";
+}
+
+function copyClusterId() {
+  const clusterText = document.getElementById("cluster-id-value").textContent;
+  if (!clusterText || clusterText === "—") return;
+  
+  const textToCopy = `Selector Tool - Cluster ${clusterText}`;
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    const btn = document.getElementById("btn-copy-cluster");
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-check text-green-500 text-2xl"></i>';
+      setTimeout(() => {
+        btn.innerHTML = '<i class="fas fa-copy text-2xl"></i>';
+      }, 2000);
+    }
+  }).catch(err => console.error("Error al copiar: ", err));
 }
 
 window.onload = () => {
