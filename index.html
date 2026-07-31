@@ -410,7 +410,7 @@
   </div>
 
   <!-- PANTALLA DE CONFIRMACIÓN (Success Screen) -->
-  <div id="success-screen" class="hidden" style="display:none;">
+  <div id="success-screen" class="hidden">
     <div class="max-w-2xl mx-auto mt-8 mb-16 px-4">
       <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 md:p-12 text-center">
         <!-- Success Icon -->
@@ -873,7 +873,6 @@ let lastFetchTime = null;
 let isFetching = false;
 let allFilteredCourses = [];
 let allFilteredPossibleGroups = [];
-let possibleGroupsView = 'cards';
 let matrixHintDismissed = false;
 const matrixCellData = new Map();
 let selectedCourses = [];
@@ -967,8 +966,7 @@ function applyTranslations(regionKey) {
   // Success screen
   el('success-title').textContent = T.successTitle;
   el('success-subtitle').textContent = T.successSubtitle;
-  el('success-title').textContent = T.successTitle;
- el('success-cluster-label').textContent = T.successClusterIdLabel;
+  el('success-cluster-label').textContent = T.successClusterIdLabel;
   el('success-summary-label').textContent = T.successSummaryLabel;
   el('btn-new-student-text').textContent = T.successBtnNew;
 }
@@ -1181,99 +1179,6 @@ function parseAgeRange(ageStr) {
   return m ? { min: parseInt(m[1],10), max: parseInt(m[2],10) } : { min: 7, max: 17 };
 }
 
-function inferInterest(courseTitle) {
-  const t = String(courseTitle || "").toLowerCase();
-  
-  // Coding y Videojuegos
-  if (
-    t.includes("funtech") ||
-    t.includes("scratch") ||
-    t.includes("minecraft") ||
-    t.includes("roblox") ||
-    t.includes("python") ||
-    t.includes("unity") ||
-    t.includes("web") ||
-    t.includes("godot") ||
-    t.includes("game") ||
-    t.includes("c#")
-  ) {
-    return "coding";
-  }
-  
-  // Media y Diseño
-  if (
-    t.includes("drawing") ||
-    t.includes("dibujo") ||
-    t.includes("ilustra") ||
-    t.includes("creatividad") ||
-    t.includes("creativity") ||
-    t.includes("fwd") ||
-    t.includes("blender") ||
-    t.includes("graphic") ||
-    t.includes("design") ||
-    t.includes("diseño") ||
-    t.includes("figma") ||
-    t.includes("art") ||
-    t.includes("3d")
-  ) {
-    return "design";
-  }
-  
-  // Default
-  return "coding";
-}
-
-function extractCourseType(courseName, courseTitle) {
-  const fullText = `${courseName || ""} ${courseTitle || ""}`.toLowerCase().trim();
-  
-  // Lista de detección con niveles (orden importa - específicos primero)
-  const courseMap = {
-    // Coding y Videojuegos (específicos primero)
-    "minecraft lvl 2": ["minecraft lvl 2", "minecraft level 2", "minecraft nivel 2", "minecraft 2"],
-    "minecraft": ["minecraft"],
-    
-    "roblox lvl 2": ["roblox lvl 2", "roblox level 2", "roblox nivel 2", "roblox 2", "roblox game developer lvl 2"],
-    "roblox": ["roblox"],
-    
-    "python pro": ["python pro", "python avanzado", "python advanced", "python lvl 2", "python lvl2", "python level 2", "python nivel 2", "pythonlvl2"],
-    "python": ["python new", "python fundamentos", "python básico"], // Solo básico
-    
-    "funtech": ["funtech", "fun tech", "explorers"],
-    "scratch": ["scratch", "magia", "código"],
-    "unity": ["unity", "c#"],
-    "web": ["web", "html", "css", "diseño web"],
-    "godot": ["godot"],
-    
-    // Media y Diseño (específicos primero)
-    "digital creativity 2": ["creatividad digital nivel 2", "digital creativity 2", "creatividad 2", "creativity 2"],
-    "digital creativity 1": ["creatividad digital nivel 1", "digital creativity 1", "creatividad 1", "creativity 1"],
-    "drawing": ["drawing", "dibujo"],
-    "ilustración": ["ilustra", "ilustracion", "illustration"],
-    "fwd pro": ["fwd", "blender", "fantastic world"],
-    "graphic design": ["graphic", "grafico", "diseño gráfico"]
-  };
-  
-  // Buscar coincidencia (los específicos se comprueban primero)
-  for (const [cleanName, keywords] of Object.entries(courseMap)) {
-    for (const keyword of keywords) {
-      if (fullText.includes(keyword)) {
-        // Formatear el nombre con capitalización correcta
-        return cleanName
-          .split(' ')
-          .map(word => word === 'lvl' ? 'lvl' : word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-      }
-    }
-  }
-  
-  // Fallback: retornar el título original limpio (sin IDs)
-  const cleaned = (courseTitle || courseName || "Curso")
-    .replace(/ID\s*\d+:/gi, "")
-    .replace(/\$\d+/g, "")
-    .trim();
-  return cleaned;
-}
-
 function parseISODateOnly(s) {
   const str = String(s || "").trim();
   if (!str) return null;
@@ -1338,12 +1243,8 @@ function parseDayAbbreviation(dayStr) {
 // MAPEO DE DATOS: GRUPOS ACTIVOS (CORREGIDO CON NOMBRE EXACTO)
 // ============================================
 function mapRowsToCourses(headers, rows) {
-  // 1. DIAGNÓSTICO DE ENCABEZADOS
-  console.group("🔍 DIAGNÓSTICO DE COLUMNAS");
-  // console.log("Todos los encabezados:", headers); // Descomentar si necesitas ver todos
-
   const findCol = (name) => headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
-  
+
   const idx_group = findCol("group_title");
   const idx_course = findCol("course_title");
   const idx_age = findCol("age");
@@ -1351,20 +1252,11 @@ function mapRowsToCourses(headers, rows) {
   const idx_enrolled = findCol("enrolled");
   const idx_status = findCol("status");
   const idx_teacher = findCol("teacher");
-  
-  const idx_date = findCol("first_lesson_date"); 
-  
-  // --- CORRECCIÓN AQUÍ: USAMOS EL NOMBRE EXACTO QUE ENCONTRASTE ---
-  let idx_time = findCol("first_lesson_time_gmt_5"); 
-  
-  // Fallback por si acaso cambia en el futuro
-  if (idx_time === -1) idx_time = findCol("time_gmt"); 
-  if (idx_time === -1) idx_time = findCol("first_lesson_time");
+  const idx_date = findCol("first_lesson_date");
 
-  console.log(`✅ Índice 'course_title': ${idx_course}`);
-  console.log(`✅ Índice 'first_lesson_date': ${idx_date}`);
-  console.log(`✅ Índice 'first_lesson_time_gmt_5': ${idx_time}`); // ESTE YA NO DEBE SER -1
-  console.groupEnd();
+  let idx_time = findCol("first_lesson_time_gmt_5");
+  if (idx_time === -1) idx_time = findCol("time_gmt");
+  if (idx_time === -1) idx_time = findCol("first_lesson_time");
 
   const courses = [];
   const today = new Date();
@@ -1383,12 +1275,7 @@ function mapRowsToCourses(headers, rows) {
     const rawDate = idx_date >= 0 ? r[idx_date] : "";
     const rawTime = idx_time >= 0 ? r[idx_time] : "";
     
-    // Usamos la función de limpieza formatTimeHHMM que ya tienes
-    const timeStr = formatTimeHHMM(rawTime); 
-
-    if (i < 3) {
-        console.log(`📝 FILA ${i}: Fecha="${rawDate}" | Hora Raw="${rawTime}" | Hora Limpia="${timeStr}"`);
-    }
+    const timeStr = formatTimeHHMM(rawTime);
 
     // FILTROS DE CALIDAD
     const capacity = idx_capacity >= 0 ? parseInt(r[idx_capacity] || "0") : 0;
@@ -1418,26 +1305,21 @@ function mapRowsToCourses(headers, rows) {
       id: `active_${i}_${courseId}`,
       courseId: courseId,
       name_es: name,
-      topic: name,
       internalCode: internalCode,
       min_age: ageRange.min,
       max_age: ageRange.max,
-      interest: inferInterest(name),
-      courseType: extractCourseType(name, name),
       enrolled: enrolled,
       capacity: capacity,
       isFull: capacity > 0 && enrolled >= capacity,
       next_start: rawDate && timeStr ? `${rawDate} | ${timeStr}` : (rawDate || "N/A"),
       teacher: idx_teacher >= 0 ? r[idx_teacher] : "Tutor N/A",
       startDateObj: startDate,
-      timeStr: timeStr, // <--- ESTA ES LA VARIABLE CLAVE QUE AHORA SÍ TENDRÁ DATOS
+      timeStr: timeStr,
       timeMinutes: parseTimeToMinutes(timeStr),
       day: startDate ? getDayOfWeekFromDate(startDate) : null,
       type: 'active'
     });
   }
-  
-  console.log(`✅ Loaded ${courses.length} active groups.`);
   return courses;
 }
 
@@ -1446,8 +1328,6 @@ function mapRowsToCourses(headers, rows) {
 // ============================================
 function mapRowsToPossibleGroups(headers, rows) {
   const groups = [];
-  
-  console.log("=== PARSING POSSIBLE GROUPS ===");
   
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
@@ -1484,15 +1364,12 @@ function mapRowsToPossibleGroups(headers, rows) {
 
     if (students > capacity) continue;
 
-    const group = {
+    groups.push({
       id: `possible_${i}_${courseName}_${day}_${hora}`,
       courseId: idRef,
       name_es: courseName,
-      topic: courseName,
-      courseTitle: courseName,
       format: isPremium ? "premium" : "regular",
       day: day,
-      dayRaw: dayRaw,
       hora: hora,
       timeMinutes: parseTimeToMinutes(hora),
       enrolled: students,
@@ -1500,19 +1377,13 @@ function mapRowsToPossibleGroups(headers, rows) {
       isFull: students >= capacity,
       min_age: ageRange.min,
       max_age: ageRange.max,
-      interest: inferInterest(courseName),
-      courseType: extractCourseType(courseName, courseName),
       next_start: `${day} | ${hora}`,
       teacher: T.teacherTbd,
       type: 'possible',
       semanticId: semanticId,
-      clusterScore: clusterScore // <--- GUARDAMOS EL PUNTAJE AQUÍ
-    };
-    
-    groups.push(group);
+      clusterScore: clusterScore
+    });
   }
-  
-  console.log(`✅ Loaded ${groups.length} possible groups.`);
   return groups;
 }
 
@@ -1561,7 +1432,6 @@ async function fetchTCMList() {
     const resp = await fetch(TCM_LIST_CSV + "&_=" + Date.now(), { cache: "no-store" });
     const text = await resp.text();
     const { rows } = parseCSVRobust(text);
-    console.group(`🔍 TCM parsing — ${rows.length} filas totales`);
     const discarded = [];
     TCM_LIST = [];
     rows.forEach((r, i) => {
@@ -1578,15 +1448,13 @@ async function fetchTCMList() {
         discarded.push({ fila: i + 2, motivo: `estado no activo: "${col1}"`, col0, col1 });
       } else {
         const parts = col0.split(' ');
-        TCM_LIST.push({ code: parts[0], name: parts.slice(1).join(' '), full: col0 });
+        TCM_LIST.push({ code: parts[0], name: parts.slice(1).join(' ') });
       }
     });
     if (discarded.length > 0) {
-      console.log(`⚠️ ${discarded.length} filas descartadas:`);
+      console.log(`⚠️ TCM: ${discarded.length} filas descartadas:`);
       console.table(discarded);
     }
-    console.log(`✅ TCM List loaded: ${TCM_LIST.length} activos`);
-    console.groupEnd();
   } catch(e) {
     console.warn("⚠️ No se pudo cargar lista de TCMs", e);
   }
@@ -1645,7 +1513,6 @@ async function fetchCourseData(forceRefresh = false) {
         const result = await method.fn(DATA_SOURCES.active);
         LIVE_COURSE_DATA = mapRowsToCourses(result.headers, result.rows);
         if (LIVE_COURSE_DATA.length === 0) throw new Error("No hay cursos activos");
-        console.log(`✅ Active groups loaded: ${LIVE_COURSE_DATA.length}`);
         break;
       } catch (err) {
         console.warn(`✗ Active ${method.name}:`, err.message);
@@ -1656,10 +1523,8 @@ async function fetchCourseData(forceRefresh = false) {
   }
   for (const method of methods) {
     try {
-      console.log(`\n🔄 Trying to fetch Possible Groups with ${method.name}...`);
       const result = await method.fn(DATA_SOURCES.possible);
       LIVE_POSSIBLE_GROUPS = mapRowsToPossibleGroups(result.headers, result.rows);
-      console.log(`✅ Possible groups loaded: ${LIVE_POSSIBLE_GROUPS.length}`);
       break;
     } catch (err) {
       console.warn(`✗ Possible ${method.name}:`, err.message);
@@ -1706,17 +1571,8 @@ function calculatePriority(course) {
   // Ejemplo: Empieza en 20 días = 980 pts.
   let score = 1000 - daysUntilStart;
 
-  // AJUSTE TÉCNICO: Penalización por Overbooking
-  // Aunque priorizamos fecha, si el grupo está LLENO, le quitamos 500 puntos.
-  // ¿Por qué? Para que si tienes un grupo mañana (Lleno) y uno pasado mañana (Libre),
-  // el sistema te muestre el Libre primero.
-  const isPremium = course.format === 'premium' || 
-                  (course.internalCode + (course.name_es || "")).toUpperCase().includes("PRM");
-if (course.isFull) {
-    score -= 500;
-}
+  if (course.isFull) score -= 500;
 
-  // Aseguramos que no de negativo
   if (score < 0) score = 0;
 
   return score;
@@ -1866,44 +1722,6 @@ async function diagnoseAndMatch(ignoreSchedule = false) {
 
   filteredActive.sort(sortFunction);
   filteredPossible.sort(sortFunction);
-
-  // ============================================================
-  // 🕵️‍♂️ MONITOR DE LÓGICA (AQUÍ ESTÁ LO QUE PEDISTE)
-  // ============================================================
-  console.group("📊 MONITOR DE PRIORIZACIÓN - TOP 10 ACTIVOS");
-  console.log(`Criterio de Orden: ${preferredSchedule.length > 0 ? "HORARIO DEL CLIENTE (ScheduleScore)" : "URGENCIA DE NEGOCIO (PriorityScore)"}`);
-  
-  const debugData = filteredActive.slice(0, 10).map((c, i) => {
-      const today = new Date();
-      today.setHours(0,0,0,0);
-      const days = c.startDateObj ? Math.ceil((c.startDateObj - today)/(1000*60*60*24)) : 999;
-      
-      let estado = "Normal";
-      if (c.isFull) estado = "⛔ LLENO (Castigado)";
-      else if (days <= 5 && (c.enrolled/c.capacity) < 0.5) estado = "🔥 URGENTE (Rescate)";
-      else if (days > 30) estado = "📉 LEJANO";
-
-      return {
-          "#": i + 1,
-          "ID": c.internalCode,
-          "Fecha Inicio": c.next_start.split("|")[0].trim(), // Solo la fecha
-          "Días Falta": days,
-          "Ocupación": `${c.enrolled}/${c.capacity} (${Math.round((c.enrolled/c.capacity)*100)}%)`,
-          "ESTADO": estado,
-          "Pts Negocio": Math.round(c.priority),
-          "Pts Horario": Math.round(c.scheduleScore),
-          "SCORE FINAL": preferredSchedule.length > 0 ? Math.round(c.scheduleScore) : Math.round(c.priority)
-      };
-  });
-  
-  if(debugData.length > 0) {
-      console.table(debugData);
-      console.log("👆 Si ves 'LLENO' arriba de 'URGENTE' o 'Normal', hay un error en la lógica.");
-  } else {
-      console.log("⚠️ No hay grupos activos que cumplan los filtros básicos (Edad/Tipo/Curso)");
-  }
-  console.groupEnd();
-  // ============================================================
 
   allFilteredCourses = filteredActive;
   allFilteredPossibleGroups = filteredPossible;
@@ -2388,8 +2206,6 @@ function updateSaleSummary() {
   const summaryContent = document.getElementById("summary-content");
   const amoCrm = document.getElementById("amo_crm_link").value.trim();
   const age = document.getElementById("student_age").value;
-    const groupType = document.getElementById("group_type").value;
-  const isSen = document.getElementById("is_sen").checked;
   
   if (selectedCourses.length === 0) {
     summaryContent.innerHTML = `<p class="text-gray-500">${T.summaryPlaceholder}</p>`;
@@ -2413,7 +2229,7 @@ function updateSaleSummary() {
   }
 
   html += `<div class="mt-2 border-t pt-2"><strong>${T.summarySelection}</strong></div>`;
-  selectedCourses.forEach((c, idx) => {
+  selectedCourses.forEach(c => {
     const typeLabel = c.type === 'possible' ? ` ${T.summaryTagPossible}` : ` ${T.summaryTagActive}`;
     html += `<div class="text-sm pl-2">• ${c.name_es}${typeLabel}</div>`;
   });
@@ -2588,46 +2404,12 @@ function resetForNextStudent() {
   document.getElementById("toast-container").innerHTML = "";
 }
 
-function showSuccessScreen(clusterId, copiedText) {
-  const appContainer = document.getElementById("app-container");
-  const successScreen = document.getElementById("success-screen");
-  
-  // Hide app container, show success screen
-  appContainer.style.display = "none";
-  successScreen.classList.remove("hidden");
-  
-  // Populate translated texts
-  document.getElementById("success-title").textContent = T.successTitle;
-  document.getElementById("success-subtitle").textContent = T.successSubtitle;
-  document.getElementById("success-cluster-label").textContent = T.successClusterIdLabel;
-  document.getElementById("success-summary-label").textContent = T.successSummaryLabel;
-  document.getElementById("btn-new-student-text").textContent = T.successBtnNew;
-  
-  // Populate cluster ID
-  const clusterIdValueEl = document.getElementById("cluster-id-value");
-  if (clusterIdValueEl) {
-    clusterIdValueEl.textContent = clusterId || "—";
-  }
-  
-  // Copy summary HTML from #summary-content to #success-summary
-  const sourceSummary = document.getElementById("summary-content");
-  const targetSummary = document.getElementById("success-summary");
-  if (sourceSummary && targetSummary) {
-    targetSummary.innerHTML = sourceSummary.innerHTML;
-  }
-  
-  // Copy to clipboard if there's text
-  if (copiedText) {
-    navigator.clipboard.writeText(copiedText).catch(() => {});
-  }
-}
-
 function resetForNewStudent() {
-  // Hide success screen, show app container
   const appContainer = document.getElementById("app-container");
   const successScreen = document.getElementById("success-screen");
-  
+
   successScreen.classList.add("hidden");
+  successScreen.style.display = "";
   appContainer.style.display = "";
   
   // Scroll to top
@@ -2703,20 +2485,7 @@ async function submitSale() {
       body: JSON.stringify(saleData)
     });
     
-    // 4. LÓGICA DE COPIADO AL PORTAPAPELES (NUEVO)
-    const possibleGroup = selectedCourses.find(c => c.type === 'possible' && c.semanticId);
-    let copyMessage = "";
-    
-    if (possibleGroup) {
-        // Texto exacto solicitado: "Selector Tool - Cluster [ID]"
-        const textToCopy = `Selector Tool - Cluster ${possibleGroup.semanticId}`;
-        
-        // Usamos la API del portapapeles
-        await navigator.clipboard.writeText(textToCopy);
-        copyMessage = `\n\n📋 COPIADO AL PORTAPAPELES:\n"${textToCopy}"`;
-    }
-
-    // 5. Feedback Final - Mostrar pantalla de éxito
+    // 4. Mostrar pantalla de éxito
     const possibleGroupForCopy = selectedCourses.find(c => c.type === 'possible' && c.semanticId);
     const clusterId = possibleGroupForCopy?.semanticId || "";
     const textToCopy = clusterId ? `Selector Tool - Cluster ${clusterId}` : "";
@@ -2726,6 +2495,7 @@ async function submitSale() {
     const successScreen = document.getElementById("success-screen");
     appContainer.style.display = "none";
     successScreen.classList.remove("hidden");
+    successScreen.style.display = "";
     
     // Populate translated texts
     document.getElementById("success-title").textContent = T.successTitle;
@@ -2764,8 +2534,6 @@ async function submitSale() {
 // LÓGICA DE ZONA HORARIA
 // ============================================
 
-// Offset base de Colombia (UTC-5) — referencia para grupos activos LatAm
-const COLOMBIA_OFFSET = -5;
 // Offset del sheet activo según la región — se actualiza en selectRegion()
 let SHEET_OFFSET = -5;
 
@@ -2879,8 +2647,6 @@ function copyClusterId() {
 
 window.onload = () => {
   document.addEventListener('mouseup', () => { isDragging = false; });
-  populateTimezones('latam');
-  document.getElementById("student_age").value = 10;
   setInterval(() => { if (lastFetchTime) updateDataSourceInfo(); }, 30000);
   
   // Event listener for "Nuevo Estudiante" button on success screen
