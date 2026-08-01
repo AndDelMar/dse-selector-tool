@@ -693,6 +693,7 @@ const TRANSLATIONS = {
     successTitle: '¡Registro Exitoso!',
     successSubtitle: 'La solicitud ha sido enviada.',
     successClusterIdLabel: '🆔 Cluster ID',
+    successActiveGroupLabel: '✅ Grupo Activo — no requiere Cluster ID',
     successSummaryLabel: 'Resumen de la selección',
     successBtnNew: 'Registrar nuevo estudiante',
     msgErrorTitle: '❌ Error', msgErrorSave: 'No se pudo guardar. Intenta de nuevo.',
@@ -772,6 +773,7 @@ const TRANSLATIONS = {
     successTitle: 'Registro Salvo!',
     successSubtitle: 'A solicitação foi enviada.',
     successClusterIdLabel: '🆔 Cluster ID',
+    successActiveGroupLabel: '✅ Grupo Ativo — não requer Cluster ID',
     successSummaryLabel: 'Resumo da seleção',
     successBtnNew: 'Registrar novo aluno',
     msgErrorTitle: '❌ Erro', msgErrorSave: 'Não foi possível salvar. Tente novamente.',
@@ -851,6 +853,7 @@ const TRANSLATIONS = {
     successTitle: 'Kayıt Tamamlandı!',
     successSubtitle: 'Talep gönderildi.',
     successClusterIdLabel: '🆔 Cluster ID',
+    successActiveGroupLabel: '✅ Aktif Grup — Cluster ID gerektirmez',
     successSummaryLabel: 'Seçim Özeti',
     successBtnNew: 'Yeni öğrenci kaydet',
     msgErrorTitle: '❌ Hata', msgErrorSave: 'Kaydedilemedi. Lütfen tekrar deneyin.',
@@ -2411,11 +2414,16 @@ function resetForNewStudent() {
   successScreen.classList.add("hidden");
   successScreen.style.display = "";
   appContainer.style.display = "";
-  
-  // Scroll to top
+
+  // Restaurar estilos del bloque de cluster al estado neutro para el próximo uso
+  const clusterIdValueEl = document.getElementById("cluster-id-value");
+  const copyBtn = document.getElementById("btn-copy-cluster");
+  const clusterNote = document.querySelector("#success-cluster-id p");
+  if (clusterIdValueEl) { clusterIdValueEl.textContent = "—"; clusterIdValueEl.style.fontSize = ""; }
+  if (copyBtn) copyBtn.style.display = "";
+  if (clusterNote) clusterNote.style.display = "";
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  
-  // Reset all state (same as resetForNextStudent)
   resetForNextStudent();
 }
 
@@ -2486,40 +2494,56 @@ async function submitSale() {
     });
     
     // 4. Mostrar pantalla de éxito
-    const possibleGroupForCopy = selectedCourses.find(c => c.type === 'possible' && c.semanticId);
-    const clusterId = possibleGroupForCopy?.semanticId || "";
-    const textToCopy = clusterId ? `Selector Tool - Cluster ${clusterId}` : "";
-    
+    const selectedGroup = selectedCourses[0];
+    const isPossibleSale = selectedGroup?.type === 'possible';
+    const possibleGroup = isPossibleSale ? selectedGroup : null;
+    const activeGroup = isPossibleSale ? null : selectedGroup;
+
     // Hide app container, show success screen
     const appContainer = document.getElementById("app-container");
     const successScreen = document.getElementById("success-screen");
     appContainer.style.display = "none";
     successScreen.classList.remove("hidden");
     successScreen.style.display = "";
-    
+
     // Populate translated texts
-    document.getElementById("success-title").textContent = T.successTitle;
-    document.getElementById("success-subtitle").textContent = T.successSubtitle;
-    document.getElementById("success-cluster-label").textContent = T.successClusterIdLabel;
-    document.getElementById("success-summary-label").textContent = T.successSummaryLabel;
-    document.getElementById("btn-new-student-text").textContent = T.successBtnNew;
-    
-    // Populate cluster ID
+    const elSuccessTitle = document.getElementById("success-title");
+    const elSuccessSubtitle = document.getElementById("success-subtitle");
+    const elSuccessSummaryLabel = document.getElementById("success-summary-label");
+    const elBtnNewStudentText = document.getElementById("btn-new-student-text");
+    if (elSuccessTitle) elSuccessTitle.textContent = T.successTitle;
+    if (elSuccessSubtitle) elSuccessSubtitle.textContent = T.successSubtitle;
+    if (elSuccessSummaryLabel) elSuccessSummaryLabel.textContent = T.successSummaryLabel;
+    if (elBtnNewStudentText) elBtnNewStudentText.textContent = T.successBtnNew;
+
+    // Cluster ID block — differentiate by group type
+    const clusterBlock = document.getElementById("success-cluster-id");
+    const clusterLabel = document.getElementById("success-cluster-label");
     const clusterIdValueEl = document.getElementById("cluster-id-value");
-    if (clusterIdValueEl) {
-      clusterIdValueEl.textContent = clusterId || "—";
+    const copyBtn = document.getElementById("btn-copy-cluster");
+    const clusterNote = clusterBlock?.querySelector("p");
+
+    if (isPossibleSale) {
+      const clusterId = possibleGroup?.semanticId || possibleGroup?.semantic_id || "";
+      if (clusterBlock) clusterBlock.className = "bg-gray-50 rounded-xl border-2 border-green-500 p-6 mb-8";
+      if (clusterLabel) clusterLabel.textContent = T.successClusterIdLabel;
+      if (clusterIdValueEl) clusterIdValueEl.textContent = clusterId || "—";
+      if (copyBtn) copyBtn.style.display = "";
+      if (clusterNote) clusterNote.style.display = "";
+      if (clusterId) navigator.clipboard.writeText(`Selector Tool - Cluster ${clusterId}`).catch(() => {});
+    } else {
+      if (clusterBlock) clusterBlock.className = "bg-gray-50 rounded-xl border-2 border-gray-300 p-6 mb-8";
+      if (clusterLabel) clusterLabel.textContent = activeGroup?.internalCode || "";
+      if (clusterIdValueEl) { clusterIdValueEl.textContent = T.successActiveGroupLabel; clusterIdValueEl.style.fontSize = "1.1rem"; }
+      if (copyBtn) copyBtn.style.display = "none";
+      if (clusterNote) clusterNote.style.display = "none";
     }
-    
+
     // Copy summary HTML from #summary-content to #success-summary
     const sourceSummary = document.getElementById("summary-content");
     const targetSummary = document.getElementById("success-summary");
     if (sourceSummary && targetSummary) {
       targetSummary.innerHTML = sourceSummary.innerHTML;
-    }
-    
-    // Copy to clipboard if there's text
-    if (textToCopy) {
-      navigator.clipboard.writeText(textToCopy).catch(() => {});
     }
     
   } catch (error) {
