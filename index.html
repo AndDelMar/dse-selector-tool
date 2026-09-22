@@ -2507,14 +2507,10 @@ async function submitSale() {
     successScreen.style.display = "";
 
     // Populate translated texts
-    const elSuccessTitle = document.getElementById("success-title");
-    const elSuccessSubtitle = document.getElementById("success-subtitle");
-    const elSuccessSummaryLabel = document.getElementById("success-summary-label");
-    const elBtnNewStudentText = document.getElementById("btn-new-student-text");
-    if (elSuccessTitle) elSuccessTitle.textContent = T.successTitle;
-    if (elSuccessSubtitle) elSuccessSubtitle.textContent = T.successSubtitle;
-    if (elSuccessSummaryLabel) elSuccessSummaryLabel.textContent = T.successSummaryLabel;
-    if (elBtnNewStudentText) elBtnNewStudentText.textContent = T.successBtnNew;
+    document.getElementById("success-title").textContent = T.successTitle;
+    document.getElementById("success-subtitle").textContent = T.successSubtitle;
+    document.getElementById("success-summary-label").textContent = T.successSummaryLabel;
+    document.getElementById("btn-new-student-text").textContent = T.successBtnNew;
 
     // Cluster ID block — differentiate by group type
     const clusterBlock = document.getElementById("success-cluster-id");
@@ -2524,17 +2520,19 @@ async function submitSale() {
     const clusterNote = clusterBlock?.querySelector("p");
 
     if (isPossibleSale) {
-      const clusterId = possibleGroup?.semanticId || possibleGroup?.semantic_id || "";
-      if (clusterBlock) clusterBlock.className = "bg-gray-50 rounded-xl border-2 border-green-500 p-6 mb-8";
-      if (clusterLabel) clusterLabel.textContent = T.successClusterIdLabel;
-      if (clusterIdValueEl) clusterIdValueEl.textContent = clusterId || "—";
+      clusterBlock.className = "bg-gray-50 rounded-xl border-2 border-green-500 p-6 mb-8";
+      clusterLabel.textContent = T.successClusterIdLabel;
+      clusterIdValueEl.textContent = possibleGroup.semanticId;
       if (copyBtn) copyBtn.style.display = "";
       if (clusterNote) clusterNote.style.display = "";
+      const clusterId = possibleGroup?.semanticId || possibleGroup?.semantic_id || "";
+      clusterIdValueEl.textContent = clusterId || "—";
       if (clusterId) navigator.clipboard.writeText(`Selector Tool - Cluster ${clusterId}`).catch(() => {});
     } else {
-      if (clusterBlock) clusterBlock.className = "bg-gray-50 rounded-xl border-2 border-gray-300 p-6 mb-8";
-      if (clusterLabel) clusterLabel.textContent = activeGroup?.internalCode || "";
-      if (clusterIdValueEl) { clusterIdValueEl.textContent = T.successActiveGroupLabel; clusterIdValueEl.style.fontSize = "1.1rem"; }
+      clusterBlock.className = "bg-gray-50 rounded-xl border-2 border-gray-300 p-6 mb-8";
+      clusterLabel.textContent = activeGroup?.internalCode || "";
+      clusterIdValueEl.textContent = T.successActiveGroupLabel;
+      clusterIdValueEl.style.fontSize = "1.1rem";
       if (copyBtn) copyBtn.style.display = "none";
       if (clusterNote) clusterNote.style.display = "none";
     }
